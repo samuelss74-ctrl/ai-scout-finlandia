@@ -85,11 +85,8 @@ export default async function Home() {
       .maybeSingle(),
 
     supabase
-      .from("ai_reports")
+      .from("ai_scout_current_report")
       .select("*")
-      .eq("game_id", dashboard.game_id)
-      .eq("report_type", "pre_match")
-      .order("generated_at", { ascending: false })
       .limit(1)
       .maybeSingle(),
   ]);
@@ -280,8 +277,7 @@ export default async function Home() {
                 <div>
                   <span>Insläppta/match</span>
                   <strong>
-                    {opponent.season_goals_conceded_per_game ??
-                      "–"}
+                    {opponent.season_goals_conceded_per_game ?? "–"}
                   </strong>
                 </div>
 
