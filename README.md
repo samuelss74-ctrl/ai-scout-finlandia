@@ -1,0 +1,1 @@
+# ai-scout-finlandia
