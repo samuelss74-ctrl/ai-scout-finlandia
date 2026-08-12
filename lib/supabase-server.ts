@@ -1,19 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
-
 export function getSupabaseServerClient() {
-  const url = process.env.SUPABASE_URL;
-  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!url || !serviceRoleKey) {
-    throw new Error(
-      "SUPABASE_URL eller SUPABASE_SERVICE_ROLE_KEY saknas i miljövariablerna."
-    );
-  }
-
-  return createClient(url, serviceRoleKey, {
-    auth: {
-      persistSession: false,
-      autoRefreshToken: false,
-    },
-  });
+ const url=process.env.SUPABASE_URL; const key=process.env.SUPABASE_SERVICE_ROLE_KEY;
+ if(!url||!key) throw new Error("Supabase environment variables saknas.");
+ return createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false}});
 }
