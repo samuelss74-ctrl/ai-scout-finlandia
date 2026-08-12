@@ -2,7 +2,7 @@ import { getSupabaseServerClient } from "../lib/supabase-server";
 
 export const dynamic = "force-dynamic";
 
-function formatMatchTime(value: string | null) {
+function formatDate(value: string | null) {
   if (!value) return "Tid saknas";
 
   return new Intl.DateTimeFormat("sv-SE", {
@@ -33,22 +33,15 @@ function splitPlan(value: string | null) {
 
   return value
     .split(/\n+/)
-    .map((x) => x.trim())
+    .map((item) => item.trim())
     .filter(Boolean)
-    .map((x) => x.replace(/^\d+[.)]\s*/, ""));
+    .map((item) => item.replace(/^\d+[.)]\s*/, ""));
 }
 
 export default async function Home() {
   const supabase = getSupabaseServerClient();
 
-  // =========================================================
-  // DASHBOARD
-  // =========================================================
-
-  const {
-    data: dashboard,
-    error: dashboardError,
-  } = await supabase
+  const { data: dashboard, error: dashboardError } = await supabase
     .from("ai_scout_dashboard")
     .select("*")
     .limit(1)
@@ -83,76 +76,39 @@ export default async function Home() {
     );
   }
 
-  // =========================================================
-  // MOTSTÅNDARANALYS + AI-RAPPORT
-  // =========================================================
-
-  const [
-    {
-      data: opponent,
-      error: opponentError,
-    },
-    {
-      data: aiReport,
-      error: reportError,
-    },
-  ] = await Promise.all([
+  const [opponentResult, reportResult] = await Promise.all([
     supabase
       .from("ai_scout_opponent_analysis")
       .select("*")
-      .eq(
-        "opponent_team_id",
-        dashboard.opponent_team_id
-      )
+      .eq("opponent_team_id", dashboard.opponent_team_id)
       .limit(1)
       .maybeSingle(),
 
     supabase
       .from("ai_reports")
       .select("*")
-      .eq(
-        "game_id",
-        dashboard.game_id
-      )
-      .eq(
-        "report_type",
-        "pre_match"
-      )
-      .order(
-        "generated_at",
-        { ascending: false }
-      )
+      .eq("game_id", dashboard.game_id)
+      .eq("report_type", "pre_match")
+      .order("generated_at", { ascending: false })
       .limit(1)
       .maybeSingle(),
   ]);
 
-  const finlandiaForm =
-    formToSwedish(
-      dashboard.finlandia_form
-    );
+  const opponent = opponentResult.data;
+  const opponentError = opponentResult.error;
 
-  const limitedOpponentForm =
-    formToSwedish(
-      opponent?.form ?? null
-    );
+  const aiReport = reportResult.data;
+  const reportError = reportResult.error;
 
-  const matchPlan =
-    splitPlan(
-      aiReport?.match_plan ?? null
-    );
+  const finlandiaForm = formToSwedish(dashboard.finlandia_form);
+  const opponentForm = formToSwedish(opponent?.form ?? null);
+  const matchPlan = splitPlan(aiReport?.match_plan ?? null);
 
   return (
     <main className="page">
       <div className="container">
-
-        {/* ===================================================
-            HEADER
-        =================================================== */}
-
         <header className="hero">
-          <p className="eyebrow">
-            FINLANDIA PALLO AIF P2011
-          </p>
+          <p className="eyebrow">FINLANDIA PALLO AIF P2011</p>
 
           <h1>AI Scout</h1>
 
@@ -161,18 +117,326 @@ export default async function Home() {
           </p>
         </header>
 
-        {/* ===================================================
-            NÄSTA MATCH
-        =================================================== */}
-
         <section className="card matchCard">
-          <p className="label">
-            Nästa match
-          </p>
+          <p className="label">Nästa match</p>
 
-          <h2>
-            {dashboard.opponent_name}
-          </h2>
+          <h2>{dashboard.opponent_name}</h2>
 
           <div className="matchMeta">
-            <
+            <span>{formatDate(dashboard.match_time)}</span>
+            <span>•</span>
+
+            <span>
+              {dashboard.finlandia_home_away === "HOME"
+                ? "Hemma"
+                : "Borta"}
+            </span>
+          </div>
+
+          <p className="muted">
+            {dashboard.venue_name ?? "Spelplats saknas"}
+            {dashboard.venue_surface
+              ? ` · ${dashboard.venue_surface}`
+              : ""}
+          </p>
+        </section>
+
+        <section className="gridTwo">
+          <article className="card">
+            <p className="label">Finlandia</p>
+
+            <div className="bigStat">
+              {dashboard.finlandia_position ?? "–"}
+            </div>
+
+            <p className="muted">tabellplats</p>
+
+            <div className="statsRow">
+              <div>
+                <strong>{dashboard.finlandia_points ?? "–"}</strong>
+                <span>Poäng</span>
+              </div>
+
+              <div>
+                <strong>{dashboard.finlandia_wins ?? "–"}</strong>
+                <span>Vinster</span>
+              </div>
+
+              <div>
+                <strong>
+                  {dashboard.finlandia_goal_difference ?? "–"}
+                </strong>
+                <span>Målskillnad</span>
+              </div>
+            </div>
+          </article>
+
+          <article className="card">
+            <p className="label">Motståndare</p>
+
+            <div className="bigStat">
+              {dashboard.opponent_position ?? "–"}
+            </div>
+
+            <p className="muted">tabellplats</p>
+
+            <div className="statsRow">
+              <div>
+                <strong>{dashboard.opponent_points ?? "–"}</strong>
+                <span>Poäng</span>
+              </div>
+
+              <div>
+                <strong>{dashboard.opponent_wins ?? "–"}</strong>
+                <span>Vinster</span>
+              </div>
+
+              <div>
+                <strong>
+                  {dashboard.opponent_goal_difference ?? "–"}
+                </strong>
+                <span>Målskillnad</span>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <section className="card">
+          <p className="label">Finlandia – senaste 5</p>
+
+          <div className="formRow">
+            {finlandiaForm.map((result, index) => (
+              <span
+                className={resultClass(result)}
+                key={`${result}-${index}`}
+              >
+                {result}
+              </span>
+            ))}
+          </div>
+
+          <div className="statsRow formStats">
+            <div>
+              <strong>{dashboard.form_wins ?? 0}</strong>
+              <span>V</span>
+            </div>
+
+            <div>
+              <strong>{dashboard.form_draws ?? 0}</strong>
+              <span>O</span>
+            </div>
+
+            <div>
+              <strong>{dashboard.form_losses ?? 0}</strong>
+              <span>F</span>
+            </div>
+
+            <div>
+              <strong>
+                {dashboard.form_goals_scored ?? 0}–
+                {dashboard.form_goals_conceded ?? 0}
+              </strong>
+              <span>Mål</span>
+            </div>
+          </div>
+        </section>
+
+        <section className="card">
+          <p className="label">Motståndarprofil 2.0</p>
+
+          <h2>{dashboard.opponent_name}</h2>
+
+          {opponentError ? (
+            <p>
+              Kunde inte läsa motståndarprofilen:{" "}
+              {opponentError.message}
+            </p>
+          ) : opponent ? (
+            <>
+              <div className="profileGrid">
+                <div>
+                  <span>Säsongsmatcher</span>
+                  <strong>
+                    {opponent.season_games ??
+                      dashboard.opponent_games ??
+                      "–"}
+                  </strong>
+                </div>
+
+                <div>
+                  <span>Poäng/match</span>
+                  <strong>
+                    {opponent.season_points_per_game ?? "–"}
+                  </strong>
+                </div>
+
+                <div>
+                  <span>Mål/match</span>
+                  <strong>
+                    {opponent.season_goals_scored_per_game ?? "–"}
+                  </strong>
+                </div>
+
+                <div>
+                  <span>Insläppta/match</span>
+                  <strong>
+                    {opponent.season_goals_conceded_per_game ??
+                      "–"}
+                  </strong>
+                </div>
+
+                <div>
+                  <span>
+                    {opponent.opponent_match_context === "AWAY"
+                      ? "Bortapoäng/match"
+                      : "Hemmapoäng/match"}
+                  </span>
+
+                  <strong>
+                    {opponent.relevant_points_per_game ?? "–"}
+                  </strong>
+                </div>
+
+                <div>
+                  <span>Relevant mål/match</span>
+                  <strong>
+                    {opponent.relevant_goals_scored_per_game ??
+                      "–"}
+                  </strong>
+                </div>
+
+                <div>
+                  <span>Relevant insläppta/match</span>
+                  <strong>
+                    {opponent.relevant_goals_conceded_per_game ??
+                      "–"}
+                  </strong>
+                </div>
+
+                <div>
+                  <span>Tidigare möten</span>
+                  <strong>
+                    {opponent.previous_meetings_finlandia ?? 0}
+                  </strong>
+                </div>
+              </div>
+
+              {opponentForm.length > 0 && (
+                <div className="limitedForm">
+                  <p className="muted">
+                    Begränsad matchhistorik i databasen (
+                    {opponent.form_matches ?? 0} match/matcher):
+                  </p>
+
+                  <div className="formRow">
+                    {opponentForm.map((result, index) => (
+                      <span
+                        className={resultClass(result)}
+                        key={`${result}-${index}`}
+                      >
+                        {result}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          ) : (
+            <p>Ingen motståndarprofil hittades.</p>
+          )}
+        </section>
+
+        <section className="card aiReportCard">
+          <div className="reportHeader">
+            <div>
+              <p className="label">AI Scout – Rapport 2.0</p>
+
+              <h2>{dashboard.opponent_name}</h2>
+            </div>
+
+            {aiReport && (
+              <div className="modelBadge">
+                {aiReport.model_name ?? "AI"} · prompt{" "}
+                {aiReport.prompt_version ?? "–"}
+              </div>
+            )}
+          </div>
+
+          {reportError ? (
+            <p>
+              Kunde inte läsa AI-rapporten: {reportError.message}
+            </p>
+          ) : !aiReport ? (
+            <div className="emptyReport">
+              <p>
+                Ingen AI-rapport är genererad för den här matchen
+                ännu.
+              </p>
+
+              <p className="muted">
+                Kör Edge Function{" "}
+                <code>generate-scout-report</code> i Supabase.
+              </p>
+            </div>
+          ) : (
+            <div className="reportSections">
+              <section>
+                <h3>Sammanfattning</h3>
+
+                <p className="preWrap">
+                  {aiReport.summary}
+                </p>
+              </section>
+
+              <section className="gridTwo">
+                <div className="reportBox">
+                  <h3>Styrkor</h3>
+
+                  <p className="preWrap">
+                    {aiReport.strengths}
+                  </p>
+                </div>
+
+                <div className="reportBox">
+                  <h3>Svagheter</h3>
+
+                  <p className="preWrap">
+                    {aiReport.weaknesses}
+                  </p>
+                </div>
+              </section>
+
+              <section>
+                <h3>Matchplan</h3>
+
+                {matchPlan.length > 0 ? (
+                  <ol className="matchPlan">
+                    {matchPlan.map((item, index) => (
+                      <li key={index}>{item}</li>
+                    ))}
+                  </ol>
+                ) : (
+                  <p className="preWrap">
+                    {aiReport.match_plan}
+                  </p>
+                )}
+              </section>
+
+              <section className="uncertaintyBox">
+                <h3>Osäkerhet / begränsningar</h3>
+
+                <p className="preWrap">
+                  {aiReport.uncertainty}
+                </p>
+              </section>
+
+              <p className="generatedAt">
+                Genererad: {formatDate(aiReport.generated_at)}
+              </p>
+            </div>
+          )}
+        </section>
+      </div>
+    </main>
+  );
+}
