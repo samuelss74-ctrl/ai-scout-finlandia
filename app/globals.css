@@ -1,4 +1,4 @@
-d:root {
+:root {
   --page: #eef3f8;
   --surface: #ffffff;
   --surface-soft: #f7f9fc;
@@ -1734,4 +1734,34 @@ p {
   .sectionNav a {
     transition: none;
   }
+}
+
+/* Solida reservfärger för webbläsare och visningslägen som tar bort gradienter. */
+.matchHero {
+  background-color: #061b31;
+}
+
+.analysisSection {
+  background-color: #061b31;
+}
+
+.analysisHeader {
+  background-color: #0d2b49;
+}
+
+.brandMark,
+.briefIcon {
+  background-color: #1769e0;
+}
+
+.contactMonogram {
+  background-color: #0d2b49;
+}
+
+.metricFill.attack {
+  background-color: #1769e0;
+}
+
+.metricFill.risk {
+  background-color: #ef8a29;
 }
