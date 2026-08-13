@@ -660,6 +660,203 @@ p {
   font-size: 18px;
 }
 
+.seasonProgressCard {
+  margin-top: 18px;
+  overflow: hidden;
+  padding: 26px;
+  border: 1px solid #cfe0f3;
+  border-radius: var(--radius-lg);
+  background:
+    radial-gradient(circle at 100% 0, rgba(99, 179, 255, 0.11), transparent 34%),
+    var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.seasonChartHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 22px;
+}
+
+.seasonChartHeader h3 {
+  margin: 0;
+  font-size: 22px;
+  letter-spacing: -0.025em;
+}
+
+.seasonChartHeader p {
+  margin: 7px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.seasonLegend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 13px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 750;
+}
+
+.seasonLegend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.seasonLegend i,
+.summaryLine {
+  display: inline-block;
+  width: 21px;
+  height: 4px;
+  border-radius: 999px;
+}
+
+.finlandiaLine {
+  background: var(--blue);
+}
+
+.opponentLine {
+  background: #ef8a29;
+}
+
+.seasonChartScroll {
+  width: 100%;
+  margin-top: 22px;
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: #fbfcfe;
+  scrollbar-color: #b9c7d7 transparent;
+  scrollbar-width: thin;
+}
+
+.seasonChartSvg {
+  display: block;
+  width: 100%;
+  min-width: 720px;
+  height: auto;
+}
+
+.chartGridLines line {
+  stroke: #dfe6ee;
+  stroke-width: 1;
+}
+
+.chartGridLines text,
+.chartXAxis text {
+  fill: #718096;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.chartXAxis line {
+  stroke: #aab8c8;
+  stroke-width: 1;
+}
+
+.chartXAxis .axisLabel,
+.seasonChartSvg > .axisLabel {
+  fill: #52647a;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.seasonLine {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 4;
+}
+
+.seasonLineFinlandia {
+  stroke: var(--blue);
+}
+
+.seasonLineOpponent {
+  stroke: #ef8a29;
+}
+
+.seasonPoint {
+  cursor: help;
+  stroke: #ffffff;
+  stroke-width: 3;
+  transition: r 150ms ease;
+}
+
+.seasonPoint:hover {
+  r: 7;
+}
+
+.seasonPointFinlandia {
+  fill: var(--blue);
+}
+
+.seasonPointOpponent {
+  fill: #ef8a29;
+}
+
+.seasonStartPoint {
+  fill: #94a3b8;
+  stroke: #ffffff;
+  stroke-width: 2;
+}
+
+.seasonChartSummary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.seasonChartSummary > div {
+  display: grid;
+  grid-template-columns: 25px 1fr auto;
+  align-items: center;
+  gap: 9px;
+  padding: 13px 15px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--surface-soft);
+}
+
+.seasonChartSummary p {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: #40536b;
+  font-size: 12px;
+  font-weight: 750;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.seasonChartSummary strong {
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+.seasonChartSummary small {
+  grid-column: 2 / -1;
+  color: var(--muted);
+  font-size: 10px;
+}
+
+.seasonChartCaption {
+  margin: 15px 0 0;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.seasonChartState {
+  margin-top: 18px;
+}
+
 .contextBadge {
   padding: 9px 12px;
   border: 1px solid #cfe1f7;
@@ -1329,6 +1526,28 @@ p {
     margin-bottom: 40px;
     padding: 21px;
     border-radius: 21px;
+  }
+
+  .seasonProgressCard {
+    padding: 21px;
+    border-radius: 21px;
+  }
+
+  .seasonChartHeader {
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .seasonLegend {
+    justify-content: flex-start;
+  }
+
+  .seasonChartSvg {
+    min-width: 680px;
+  }
+
+  .seasonChartSummary {
+    grid-template-columns: 1fr;
   }
 
   .briefIcon {
