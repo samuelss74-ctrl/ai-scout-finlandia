@@ -89,6 +89,11 @@ function formatMetric(value: number) {
   }).format(value);
 }
 
+function phoneLink(value: string | null) {
+  if (!value) return "";
+  return `tel:${value.replace(/[^\d+]/g, "")}`;
+}
+
 function StatItem({
   value,
   label,
@@ -188,7 +193,7 @@ export default async function Home() {
     );
   }
 
-  const [opponentResult, reportResult] = await Promise.all([
+  const [opponentResult, reportResult, contactResult] = await Promise.all([
     supabase
       .from("ai_scout_opponent_analysis")
       .select("*")
@@ -201,12 +206,21 @@ export default async function Home() {
       .select("*")
       .limit(1)
       .maybeSingle(),
+
+    supabase
+      .from("opponent_contacts")
+      .select("*")
+      .eq("opponent_team_id", dashboard.opponent_team_id)
+      .limit(1)
+      .maybeSingle(),
   ]);
 
   const opponent = opponentResult.data;
   const opponentError = opponentResult.error;
   const aiReport = reportResult.data;
   const reportError = reportResult.error;
+  const opponentContact = contactResult.data;
+  const contactError = contactResult.error;
 
   const finlandiaForm = formToSwedish(dashboard.finlandia_form);
   const opponentForm = formToSwedish(opponent?.form ?? null);
@@ -272,6 +286,7 @@ export default async function Home() {
           <a href="#match">Match</a>
           <a href="#fakta">Fakta</a>
           <a href="#motstandare">Motståndare</a>
+          <a href="#kontakt">Kontakt</a>
           <a href="#analys">AI-analys</a>
         </nav>
 
@@ -567,6 +582,90 @@ export default async function Home() {
             </>
           ) : (
             <div className="card inlineState">Ingen motståndarprofil hittades.</div>
+          )}
+        </section>
+
+        <section className="sectionBlock" id="kontakt">
+          <div className="sectionHeading">
+            <div>
+              <span className="overline">Matchadministration</span>
+              <h2>Kontakt med motståndaren</h2>
+            </div>
+            <p>Offentliga kontaktuppgifter för praktiska matchfrågor.</p>
+          </div>
+
+          {contactError ? (
+            <div className="card inlineState">
+              Kunde inte läsa kontaktuppgifterna: {contactError.message}
+            </div>
+          ) : opponentContact ? (
+            <article className="contactCard">
+              <div className="contactIdentity">
+                <div className="contactMonogram" aria-hidden="true">
+                  {String(opponentContact.club_name ?? "M").charAt(0)}
+                </div>
+
+                <div>
+                  <span className="teamMiniLabel">Officiell kontakt</span>
+                  <h3>{opponentContact.contact_name}</h3>
+                  <p>
+                    {opponentContact.contact_role}
+                    {opponentContact.club_name
+                      ? ` · ${opponentContact.club_name}`
+                      : ""}
+                  </p>
+                </div>
+              </div>
+
+              <div className="contactActions">
+                {opponentContact.phone && (
+                  <a
+                    className="contactButton primaryContactButton"
+                    href={phoneLink(opponentContact.phone)}
+                  >
+                    <span>Ring</span>
+                    <strong>{opponentContact.phone}</strong>
+                  </a>
+                )}
+
+                {opponentContact.email && (
+                  <a
+                    className="contactButton"
+                    href={`mailto:${opponentContact.email}`}
+                  >
+                    <span>Mejla</span>
+                    <strong>{opponentContact.email}</strong>
+                  </a>
+                )}
+
+                {opponentContact.website && (
+                  <a
+                    className="contactButton"
+                    href={opponentContact.website}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <span>Öppna</span>
+                    <strong>Lagets webbplats ↗</strong>
+                  </a>
+                )}
+              </div>
+
+              {opponentContact.source_url && (
+                <a
+                  className="contactSource"
+                  href={opponentContact.source_url}
+                  target="_blank"
+                  rel="noreferrer"
+                >
+                  Källa: officiell kontaktsida ↗
+                </a>
+              )}
+            </article>
+          ) : (
+            <div className="card inlineState">
+              Ingen offentlig kontakt har lagts in för den här motståndaren ännu.
+            </div>
           )}
         </section>
 
