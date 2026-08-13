@@ -19,7 +19,9 @@ function formToSwedish(value: string | null) {
   return (value ?? "")
     .split("-")
     .filter(Boolean)
-    .map((r) => (r === "W" ? "V" : r === "D" ? "O" : "F"));
+    .map((result) =>
+      result === "W" ? "V" : result === "D" ? "O" : "F",
+    );
 }
 
 function resultClass(result: string) {
@@ -38,14 +40,53 @@ function splitPlan(value: string | null) {
     .map((item) => item.replace(/^\d+[.)]\s*/, ""));
 }
 
+function toNumber(value: unknown) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : 0;
+}
+
+function MetricBar({
+  label,
+  value,
+  max,
+  color,
+}: {
+  label: string;
+  value: number;
+  max: number;
+  color: "blue" | "red";
+}) {
+  const width =
+    max > 0
+      ? Math.max(4, Math.min(100, (value / max) * 100))
+      : 0;
+
+  return (
+    <div className="metricBar">
+      <div className="metricBarHeader">
+        <span>{label}</span>
+        <strong>{value.toFixed(2)}</strong>
+      </div>
+
+      <div className="metricTrack">
+        <div
+          className={`metricFill ${color}`}
+          style={{ width: `${width}%` }}
+        />
+      </div>
+    </div>
+  );
+}
+
 export default async function Home() {
   const supabase = getSupabaseServerClient();
 
-  const { data: dashboard, error: dashboardError } = await supabase
-    .from("ai_scout_dashboard")
-    .select("*")
-    .limit(1)
-    .maybeSingle();
+  const { data: dashboard, error: dashboardError } =
+    await supabase
+      .from("ai_scout_dashboard")
+      .select("*")
+      .limit(1)
+      .maybeSingle();
 
   if (dashboardError) {
     return (
@@ -80,7 +121,10 @@ export default async function Home() {
     supabase
       .from("ai_scout_opponent_analysis")
       .select("*")
-      .eq("opponent_team_id", dashboard.opponent_team_id)
+      .eq(
+        "opponent_team_id",
+        dashboard.opponent_team_id,
+      )
       .limit(1)
       .maybeSingle(),
 
@@ -97,15 +141,54 @@ export default async function Home() {
   const aiReport = reportResult.data;
   const reportError = reportResult.error;
 
-  const finlandiaForm = formToSwedish(dashboard.finlandia_form);
-  const opponentForm = formToSwedish(opponent?.form ?? null);
-  const matchPlan = splitPlan(aiReport?.match_plan ?? null);
+  const finlandiaForm = formToSwedish(
+    dashboard.finlandia_form,
+  );
+
+  const opponentForm = formToSwedish(
+    opponent?.form ?? null,
+  );
+
+  const matchPlan = splitPlan(
+    aiReport?.match_plan ?? null,
+  );
+
+  const seasonScored = toNumber(
+    opponent?.season_goals_scored_per_game,
+  );
+
+  const seasonConceded = toNumber(
+    opponent?.season_goals_conceded_per_game,
+  );
+
+  const relevantScored = toNumber(
+    opponent?.relevant_goals_scored_per_game,
+  );
+
+  const relevantConceded = toNumber(
+    opponent?.relevant_goals_conceded_per_game,
+  );
+
+  const chartMax = Math.max(
+    seasonScored,
+    seasonConceded,
+    relevantScored,
+    relevantConceded,
+    1,
+  );
+
+  const contextLabel =
+    opponent?.opponent_match_context === "AWAY"
+      ? "Bortaplan"
+      : "Hemmaplan";
 
   return (
     <main className="page">
       <div className="container">
         <header className="hero">
-          <p className="eyebrow">FINLANDIA PALLO AIF P2011</p>
+          <p className="eyebrow">
+            FINLANDIA PALLO AIF P2011
+          </p>
 
           <h1>AI Scout</h1>
 
@@ -120,7 +203,10 @@ export default async function Home() {
           <h2>{dashboard.opponent_name}</h2>
 
           <div className="matchMeta">
-            <span>{formatDate(dashboard.match_time)}</span>
+            <span>
+              {formatDate(dashboard.match_time)}
+            </span>
+
             <span>•</span>
 
             <span>
@@ -132,6 +218,7 @@ export default async function Home() {
 
           <p className="muted">
             {dashboard.venue_name ?? "Spelplats saknas"}
+
             {dashboard.venue_surface
               ? ` · ${dashboard.venue_surface}`
               : ""}
@@ -150,18 +237,23 @@ export default async function Home() {
 
             <div className="statsRow">
               <div>
-                <strong>{dashboard.finlandia_points ?? "–"}</strong>
+                <strong>
+                  {dashboard.finlandia_points ?? "–"}
+                </strong>
                 <span>Poäng</span>
               </div>
 
               <div>
-                <strong>{dashboard.finlandia_wins ?? "–"}</strong>
+                <strong>
+                  {dashboard.finlandia_wins ?? "–"}
+                </strong>
                 <span>Vinster</span>
               </div>
 
               <div>
                 <strong>
-                  {dashboard.finlandia_goal_difference ?? "–"}
+                  {dashboard.finlandia_goal_difference ??
+                    "–"}
                 </strong>
                 <span>Målskillnad</span>
               </div>
@@ -179,18 +271,23 @@ export default async function Home() {
 
             <div className="statsRow">
               <div>
-                <strong>{dashboard.opponent_points ?? "–"}</strong>
+                <strong>
+                  {dashboard.opponent_points ?? "–"}
+                </strong>
                 <span>Poäng</span>
               </div>
 
               <div>
-                <strong>{dashboard.opponent_wins ?? "–"}</strong>
+                <strong>
+                  {dashboard.opponent_wins ?? "–"}
+                </strong>
                 <span>Vinster</span>
               </div>
 
               <div>
                 <strong>
-                  {dashboard.opponent_goal_difference ?? "–"}
+                  {dashboard.opponent_goal_difference ??
+                    "–"}
                 </strong>
                 <span>Målskillnad</span>
               </div>
@@ -199,7 +296,9 @@ export default async function Home() {
         </section>
 
         <section className="card">
-          <p className="label">Finlandia – senaste 5</p>
+          <p className="label">
+            Finlandia – senaste 5
+          </p>
 
           <div className="formRow">
             {finlandiaForm.map((result, index) => (
@@ -214,17 +313,23 @@ export default async function Home() {
 
           <div className="statsRow formStats">
             <div>
-              <strong>{dashboard.form_wins ?? 0}</strong>
+              <strong>
+                {dashboard.form_wins ?? 0}
+              </strong>
               <span>V</span>
             </div>
 
             <div>
-              <strong>{dashboard.form_draws ?? 0}</strong>
+              <strong>
+                {dashboard.form_draws ?? 0}
+              </strong>
               <span>O</span>
             </div>
 
             <div>
-              <strong>{dashboard.form_losses ?? 0}</strong>
+              <strong>
+                {dashboard.form_losses ?? 0}
+              </strong>
               <span>F</span>
             </div>
 
@@ -239,7 +344,9 @@ export default async function Home() {
         </section>
 
         <section className="card">
-          <p className="label">Motståndarprofil 2.0</p>
+          <p className="label">
+            Motståndarprofil 2.0
+          </p>
 
           <h2>{dashboard.opponent_name}</h2>
 
@@ -263,48 +370,59 @@ export default async function Home() {
                 <div>
                   <span>Poäng/match</span>
                   <strong>
-                    {opponent.season_points_per_game ?? "–"}
+                    {opponent.season_points_per_game ??
+                      "–"}
                   </strong>
                 </div>
 
                 <div>
                   <span>Mål/match</span>
                   <strong>
-                    {opponent.season_goals_scored_per_game ?? "–"}
+                    {opponent
+                      .season_goals_scored_per_game ??
+                      "–"}
                   </strong>
                 </div>
 
                 <div>
                   <span>Insläppta/match</span>
                   <strong>
-                    {opponent.season_goals_conceded_per_game ?? "–"}
+                    {opponent
+                      .season_goals_conceded_per_game ??
+                      "–"}
                   </strong>
                 </div>
 
                 <div>
                   <span>
-                    {opponent.opponent_match_context === "AWAY"
+                    {opponent.opponent_match_context ===
+                    "AWAY"
                       ? "Bortapoäng/match"
                       : "Hemmapoäng/match"}
                   </span>
 
                   <strong>
-                    {opponent.relevant_points_per_game ?? "–"}
+                    {opponent.relevant_points_per_game ??
+                      "–"}
                   </strong>
                 </div>
 
                 <div>
                   <span>Relevant mål/match</span>
                   <strong>
-                    {opponent.relevant_goals_scored_per_game ??
+                    {opponent
+                      .relevant_goals_scored_per_game ??
                       "–"}
                   </strong>
                 </div>
 
                 <div>
-                  <span>Relevant insläppta/match</span>
+                  <span>
+                    Relevant insläppta/match
+                  </span>
                   <strong>
-                    {opponent.relevant_goals_conceded_per_game ??
+                    {opponent
+                      .relevant_goals_conceded_per_game ??
                       "–"}
                   </strong>
                 </div>
@@ -312,7 +430,8 @@ export default async function Home() {
                 <div>
                   <span>Tidigare möten</span>
                   <strong>
-                    {opponent.previous_meetings_finlandia ?? 0}
+                    {opponent
+                      .previous_meetings_finlandia ?? 0}
                   </strong>
                 </div>
               </div>
@@ -321,18 +440,21 @@ export default async function Home() {
                 <div className="limitedForm">
                   <p className="muted">
                     Begränsad matchhistorik i databasen (
-                    {opponent.form_matches ?? 0} match/matcher):
+                    {opponent.form_matches ?? 0}{" "}
+                    match/matcher):
                   </p>
 
                   <div className="formRow">
-                    {opponentForm.map((result, index) => (
-                      <span
-                        className={resultClass(result)}
-                        key={`${result}-${index}`}
-                      >
-                        {result}
-                      </span>
-                    ))}
+                    {opponentForm.map(
+                      (result, index) => (
+                        <span
+                          className={resultClass(result)}
+                          key={`${result}-${index}`}
+                        >
+                          {result}
+                        </span>
+                      ),
+                    )}
                   </div>
                 </div>
               )}
@@ -342,10 +464,85 @@ export default async function Home() {
           )}
         </section>
 
+        {opponent && (
+          <section className="card chartCard">
+            <div className="chartHeading">
+              <div>
+                <p className="label">
+                  Anfall och försvar
+                </p>
+
+                <h2>{dashboard.opponent_name}</h2>
+              </div>
+
+              <div className="chartLegend">
+                <span>
+                  <i className="legendDot blueDot" />
+                  Gjorda
+                </span>
+
+                <span>
+                  <i className="legendDot redDot" />
+                  Insläppta
+                </span>
+              </div>
+            </div>
+
+            <p className="muted">
+              Genomsnittligt antal mål per match
+            </p>
+
+            <div className="chartGrid">
+              <div className="chartGroup">
+                <h3>Hela säsongen</h3>
+
+                <MetricBar
+                  label="Gjorda mål"
+                  value={seasonScored}
+                  max={chartMax}
+                  color="blue"
+                />
+
+                <MetricBar
+                  label="Insläppta mål"
+                  value={seasonConceded}
+                  max={chartMax}
+                  color="red"
+                />
+              </div>
+
+              <div className="chartGroup">
+                <h3>{contextLabel}</h3>
+
+                <MetricBar
+                  label="Gjorda mål"
+                  value={relevantScored}
+                  max={chartMax}
+                  color="blue"
+                />
+
+                <MetricBar
+                  label="Insläppta mål"
+                  value={relevantConceded}
+                  max={chartMax}
+                  color="red"
+                />
+              </div>
+            </div>
+
+            <p className="chartNote">
+              Staplarna använder samma skala för att göra
+              jämförelsen rättvis.
+            </p>
+          </section>
+        )}
+
         <section className="card aiReportCard">
           <div className="reportHeader">
             <div>
-              <p className="label">AI Scout – Rapport 2.0</p>
+              <p className="label">
+                AI Scout – Rapport 2.0
+              </p>
 
               <h2>{dashboard.opponent_name}</h2>
             </div>
@@ -360,18 +557,20 @@ export default async function Home() {
 
           {reportError ? (
             <p>
-              Kunde inte läsa AI-rapporten: {reportError.message}
+              Kunde inte läsa AI-rapporten:{" "}
+              {reportError.message}
             </p>
           ) : !aiReport ? (
             <div className="emptyReport">
               <p>
-                Ingen AI-rapport är genererad för den här matchen
-                ännu.
+                Ingen AI-rapport är genererad för den här
+                matchen ännu.
               </p>
 
               <p className="muted">
                 Kör Edge Function{" "}
-                <code>generate-scout-report</code> i Supabase.
+                <code>generate-scout-report</code> i
+                Supabase.
               </p>
             </div>
           ) : (
@@ -427,7 +626,8 @@ export default async function Home() {
               </section>
 
               <p className="generatedAt">
-                Genererad: {formatDate(aiReport.generated_at)}
+                Genererad:{" "}
+                {formatDate(aiReport.generated_at)}
               </p>
             </div>
           )}
