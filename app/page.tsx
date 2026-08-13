@@ -159,18 +159,25 @@ function SeasonProgressChart({
   finlandia,
   opponent,
   opponentName,
+  opponentExpectedGames,
+  opponentPointsTotal,
 }: {
   finlandia: SeasonPoint[];
   opponent: SeasonPoint[];
   opponentName: string;
+  opponentExpectedGames: number;
+  opponentPointsTotal: number;
 }) {
   const width = 900;
   const height = 330;
   const padding = { top: 28, right: 24, bottom: 48, left: 54 };
-  const maxMatches = Math.max(finlandia.length, opponent.length, 1);
+  const hasCompleteOpponentSeries =
+    opponentExpectedGames > 0 && opponent.length >= opponentExpectedGames;
+  const visibleOpponent = hasCompleteOpponentSeries ? opponent : [];
+  const maxMatches = Math.max(finlandia.length, visibleOpponent.length, 1);
   const highestPoints = Math.max(
     finlandia.at(-1)?.totalPoints ?? 0,
-    opponent.at(-1)?.totalPoints ?? 0,
+    visibleOpponent.at(-1)?.totalPoints ?? 0,
     3,
   );
   const axisMax = Math.max(3, Math.ceil(highestPoints / 3) * 3);
@@ -206,7 +213,11 @@ function SeasonProgressChart({
 
         <div className="seasonLegend" aria-label="Grafens linjer">
           <span><i className="finlandiaLine" />Finlandia</span>
-          <span><i className="opponentLine" />{opponentName}</span>
+          {hasCompleteOpponentSeries ? (
+            <span><i className="opponentLine" />{opponentName}</span>
+          ) : (
+            <span className="warningBadge">Motståndarkurva väntar på data</span>
+          )}
         </div>
       </div>
 
@@ -275,10 +286,12 @@ function SeasonProgressChart({
             className="seasonLine seasonLineFinlandia"
             points={linePoints(finlandia)}
           />
-          <polyline
-            className="seasonLine seasonLineOpponent"
-            points={linePoints(opponent)}
-          />
+          {hasCompleteOpponentSeries && (
+            <polyline
+              className="seasonLine seasonLineOpponent"
+              points={linePoints(visibleOpponent)}
+            />
+          )}
 
           <circle
             className="seasonStartPoint"
@@ -301,7 +314,7 @@ function SeasonProgressChart({
             </circle>
           ))}
 
-          {opponent.map((point) => (
+          {visibleOpponent.map((point) => (
             <circle
               className="seasonPoint seasonPointOpponent"
               cx={x(point.matchNumber)}
@@ -327,14 +340,19 @@ function SeasonProgressChart({
         <div>
           <span className="summaryLine opponentLine" />
           <p>{opponentName}</p>
-          <strong>{opponent.at(-1)?.totalPoints ?? 0} poäng</strong>
-          <small>{opponent.length} matcher</small>
+          <strong>{opponentPointsTotal} poäng</strong>
+          <small>
+            {hasCompleteOpponentSeries
+              ? `${opponentExpectedGames} matcher`
+              : `Kurva saknas: ${opponent.length} av ${opponentExpectedGames} matchresultat tillgängliga`}
+          </small>
         </div>
       </div>
 
       <p className="seasonChartCaption">
         Kurvan stiger med 3 poäng vid vinst, 1 vid oavgjort och står still
-        vid förlust. Dra grafen åt sidan på mobilen för att se alla matcher.
+        vid förlust. Motståndarkurvan visas först när hela matchföljden finns,
+        så att jämförelsen inte blir missvisande.
       </p>
     </article>
   );
@@ -729,6 +747,10 @@ export default async function Home() {
               finlandia={finlandiaSeasonPoints}
               opponent={opponentSeasonPoints}
               opponentName={dashboard.opponent_name}
+              opponentExpectedGames={toNumber(
+                opponent?.season_games ?? dashboard.opponent_games,
+              )}
+              opponentPointsTotal={toNumber(dashboard.opponent_points)}
             />
           ) : (
             <div className="card inlineState seasonChartState">
