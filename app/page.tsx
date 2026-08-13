@@ -2,6 +2,31 @@ import { getSupabaseServerClient } from "../lib/supabase-server";
 
 export const dynamic = "force-dynamic";
 
+const TEAM_ID = 307308;
+const COMPETITION_ID = 133577;
+
+type GameRow = {
+  game_id: number;
+  home_team_id: number;
+  away_team_id: number;
+  home_team_name: string;
+  away_team_name: string;
+  home_goals: number | null;
+  away_goals: number | null;
+  match_time: string;
+  is_finished: boolean;
+  is_canceled: boolean;
+};
+
+type SeasonPoint = {
+  matchNumber: number;
+  totalPoints: number;
+  matchPoints: number;
+  opponent: string;
+  score: string;
+  date: string;
+};
+
 function formatMatchDate(value: string | null) {
   if (!value) return "Datum saknas";
 
@@ -92,6 +117,227 @@ function formatMetric(value: number) {
 function phoneLink(value: string | null) {
   if (!value) return "";
   return `tel:${value.replace(/[^\d+]/g, "")}`;
+}
+
+function buildSeasonPoints(games: GameRow[], teamId: number) {
+  let totalPoints = 0;
+
+  return games
+    .filter(
+      (game) =>
+        !game.is_canceled &&
+        game.is_finished &&
+        (game.home_team_id === teamId || game.away_team_id === teamId) &&
+        game.home_goals !== null &&
+        game.away_goals !== null,
+    )
+    .map((game, index) => {
+      const isHome = game.home_team_id === teamId;
+      const goalsFor = isHome ? game.home_goals! : game.away_goals!;
+      const goalsAgainst = isHome ? game.away_goals! : game.home_goals!;
+      const matchPoints =
+        goalsFor > goalsAgainst ? 3 : goalsFor === goalsAgainst ? 1 : 0;
+
+      totalPoints += matchPoints;
+
+      return {
+        matchNumber: index + 1,
+        totalPoints,
+        matchPoints,
+        opponent: isHome ? game.away_team_name : game.home_team_name,
+        score: `${goalsFor}–${goalsAgainst}`,
+        date: new Intl.DateTimeFormat("sv-SE", {
+          day: "numeric",
+          month: "short",
+          timeZone: "Europe/Stockholm",
+        }).format(new Date(game.match_time)),
+      } satisfies SeasonPoint;
+    });
+}
+
+function SeasonProgressChart({
+  finlandia,
+  opponent,
+  opponentName,
+}: {
+  finlandia: SeasonPoint[];
+  opponent: SeasonPoint[];
+  opponentName: string;
+}) {
+  const width = 900;
+  const height = 330;
+  const padding = { top: 28, right: 24, bottom: 48, left: 54 };
+  const maxMatches = Math.max(finlandia.length, opponent.length, 1);
+  const highestPoints = Math.max(
+    finlandia.at(-1)?.totalPoints ?? 0,
+    opponent.at(-1)?.totalPoints ?? 0,
+    3,
+  );
+  const axisMax = Math.max(3, Math.ceil(highestPoints / 3) * 3);
+  const plotWidth = width - padding.left - padding.right;
+  const plotHeight = height - padding.top - padding.bottom;
+
+  const x = (matchNumber: number) =>
+    padding.left + (matchNumber / maxMatches) * plotWidth;
+  const y = (points: number) =>
+    padding.top + plotHeight - (points / axisMax) * plotHeight;
+
+  const linePoints = (points: SeasonPoint[]) =>
+    [
+      `${x(0)},${y(0)}`,
+      ...points.map(
+        (point) => `${x(point.matchNumber)},${y(point.totalPoints)}`,
+      ),
+    ].join(" ");
+
+  const yTicks = Array.from({ length: 5 }, (_, index) =>
+    Math.round((axisMax / 4) * index),
+  );
+  const xTicks = Array.from({ length: maxMatches }, (_, index) => index + 1);
+
+  return (
+    <article className="seasonProgressCard">
+      <div className="seasonChartHeader">
+        <div>
+          <span className="overline">Poängutveckling</span>
+          <h3>Säsongens matcher</h3>
+          <p>Sammanlagda poäng efter varje färdigspelad match.</p>
+        </div>
+
+        <div className="seasonLegend" aria-label="Grafens linjer">
+          <span><i className="finlandiaLine" />Finlandia</span>
+          <span><i className="opponentLine" />{opponentName}</span>
+        </div>
+      </div>
+
+      <div className="seasonChartScroll">
+        <svg
+          className="seasonChartSvg"
+          viewBox={`0 0 ${width} ${height}`}
+          role="img"
+          aria-label={`Poängutveckling för Finlandia och ${opponentName}`}
+        >
+          <g className="chartGridLines">
+            {yTicks.map((tick) => (
+              <g key={tick}>
+                <line
+                  x1={padding.left}
+                  x2={width - padding.right}
+                  y1={y(tick)}
+                  y2={y(tick)}
+                />
+                <text x={padding.left - 13} y={y(tick) + 4} textAnchor="end">
+                  {tick}
+                </text>
+              </g>
+            ))}
+          </g>
+
+          <g className="chartXAxis">
+            {xTicks.map((tick) => (
+              <g key={tick}>
+                <line
+                  x1={x(tick)}
+                  x2={x(tick)}
+                  y1={height - padding.bottom}
+                  y2={height - padding.bottom + 5}
+                />
+                <text
+                  x={x(tick)}
+                  y={height - padding.bottom + 22}
+                  textAnchor="middle"
+                >
+                  {tick}
+                </text>
+              </g>
+            ))}
+            <text
+              className="axisLabel"
+              x={padding.left + plotWidth / 2}
+              y={height - 6}
+              textAnchor="middle"
+            >
+              Matchnummer
+            </text>
+          </g>
+
+          <text
+            className="axisLabel"
+            x={14}
+            y={padding.top + plotHeight / 2}
+            textAnchor="middle"
+            transform={`rotate(-90 14 ${padding.top + plotHeight / 2})`}
+          >
+            Poäng
+          </text>
+
+          <polyline
+            className="seasonLine seasonLineFinlandia"
+            points={linePoints(finlandia)}
+          />
+          <polyline
+            className="seasonLine seasonLineOpponent"
+            points={linePoints(opponent)}
+          />
+
+          <circle
+            className="seasonStartPoint"
+            cx={x(0)}
+            cy={y(0)}
+            r="4"
+          />
+
+          {finlandia.map((point) => (
+            <circle
+              className="seasonPoint seasonPointFinlandia"
+              cx={x(point.matchNumber)}
+              cy={y(point.totalPoints)}
+              r="5"
+              key={`finlandia-${point.matchNumber}`}
+            >
+              <title>
+                {`Finlandia – match ${point.matchNumber}: ${point.opponent}, ${point.score}, ${point.matchPoints} poäng (${point.date}). Totalt ${point.totalPoints}.`}
+              </title>
+            </circle>
+          ))}
+
+          {opponent.map((point) => (
+            <circle
+              className="seasonPoint seasonPointOpponent"
+              cx={x(point.matchNumber)}
+              cy={y(point.totalPoints)}
+              r="5"
+              key={`opponent-${point.matchNumber}`}
+            >
+              <title>
+                {`${opponentName} – match ${point.matchNumber}: ${point.opponent}, ${point.score}, ${point.matchPoints} poäng (${point.date}). Totalt ${point.totalPoints}.`}
+              </title>
+            </circle>
+          ))}
+        </svg>
+      </div>
+
+      <div className="seasonChartSummary">
+        <div>
+          <span className="summaryLine finlandiaLine" />
+          <p>Finlandia</p>
+          <strong>{finlandia.at(-1)?.totalPoints ?? 0} poäng</strong>
+          <small>{finlandia.length} matcher</small>
+        </div>
+        <div>
+          <span className="summaryLine opponentLine" />
+          <p>{opponentName}</p>
+          <strong>{opponent.at(-1)?.totalPoints ?? 0} poäng</strong>
+          <small>{opponent.length} matcher</small>
+        </div>
+      </div>
+
+      <p className="seasonChartCaption">
+        Kurvan stiger med 3 poäng vid vinst, 1 vid oavgjort och står still
+        vid förlust. Dra grafen åt sidan på mobilen för att se alla matcher.
+      </p>
+    </article>
+  );
 }
 
 function StatItem({
@@ -193,7 +439,8 @@ export default async function Home() {
     );
   }
 
-  const [opponentResult, reportResult, contactResult] = await Promise.all([
+  const [opponentResult, reportResult, contactResult, gamesResult] =
+    await Promise.all([
     supabase
       .from("ai_scout_opponent_analysis")
       .select("*")
@@ -213,6 +460,15 @@ export default async function Home() {
       .eq("opponent_team_id", dashboard.opponent_team_id)
       .limit(1)
       .maybeSingle(),
+
+    supabase
+      .from("games")
+      .select(
+        "game_id, home_team_id, away_team_id, home_team_name, away_team_name, home_goals, away_goals, match_time, is_finished, is_canceled",
+      )
+      .eq("competition_id", dashboard.competition_id ?? COMPETITION_ID)
+      .eq("is_finished", true)
+      .order("match_time", { ascending: true }),
   ]);
 
   const opponent = opponentResult.data;
@@ -221,6 +477,14 @@ export default async function Home() {
   const reportError = reportResult.error;
   const opponentContact = contactResult.data;
   const contactError = contactResult.error;
+  const gamesError = gamesResult.error;
+
+  const seasonGames = (gamesResult.data ?? []) as GameRow[];
+  const finlandiaSeasonPoints = buildSeasonPoints(seasonGames, TEAM_ID);
+  const opponentSeasonPoints = buildSeasonPoints(
+    seasonGames,
+    Number(dashboard.opponent_team_id),
+  );
 
   const finlandiaForm = formToSwedish(dashboard.finlandia_form);
   const opponentForm = formToSwedish(opponent?.form ?? null);
@@ -454,6 +718,23 @@ export default async function Home() {
               />
             </div>
           </article>
+
+          {gamesError ? (
+            <div className="card inlineState seasonChartState">
+              Kunde inte läsa matcherna till poänggrafen: {gamesError.message}
+            </div>
+          ) : finlandiaSeasonPoints.length > 0 ||
+            opponentSeasonPoints.length > 0 ? (
+            <SeasonProgressChart
+              finlandia={finlandiaSeasonPoints}
+              opponent={opponentSeasonPoints}
+              opponentName={dashboard.opponent_name}
+            />
+          ) : (
+            <div className="card inlineState seasonChartState">
+              Det finns ännu inga färdigspelade matcher till poänggrafen.
+            </div>
+          )}
         </section>
 
         <section className="sectionBlock" id="motstandare">
