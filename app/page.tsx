@@ -285,11 +285,23 @@ function SeasonProgressChart({
           <polyline
             className="seasonLine seasonLineFinlandia"
             points={linePoints(finlandia)}
+            fill="none"
+            stroke="#1769e0"
+            strokeWidth="5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            vectorEffect="non-scaling-stroke"
           />
           {hasCompleteOpponentSeries && (
             <polyline
               className="seasonLine seasonLineOpponent"
               points={linePoints(visibleOpponent)}
+              fill="none"
+              stroke="#ef8a29"
+              strokeWidth="5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              vectorEffect="non-scaling-stroke"
             />
           )}
 
@@ -298,6 +310,9 @@ function SeasonProgressChart({
             cx={x(0)}
             cy={y(0)}
             r="4"
+            fill="#94a3b8"
+            stroke="#ffffff"
+            strokeWidth="2"
           />
 
           {finlandia.map((point) => (
@@ -306,6 +321,9 @@ function SeasonProgressChart({
               cx={x(point.matchNumber)}
               cy={y(point.totalPoints)}
               r="5"
+              fill="#1769e0"
+              stroke="#ffffff"
+              strokeWidth="3"
               key={`finlandia-${point.matchNumber}`}
             >
               <title>
@@ -320,6 +338,9 @@ function SeasonProgressChart({
               cx={x(point.matchNumber)}
               cy={y(point.totalPoints)}
               r="5"
+              fill="#ef8a29"
+              stroke="#ffffff"
+              strokeWidth="3"
               key={`opponent-${point.matchNumber}`}
             >
               <title>
