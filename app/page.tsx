@@ -27,6 +27,33 @@ type SeasonPoint = {
   date: string;
 };
 
+type LeagueStanding = {
+  team: string;
+  games: number;
+  wins: number;
+  draws: number;
+  losses: number;
+  goalsFor: number;
+  goalsAgainst: number;
+  points: number;
+  form: string[];
+};
+
+const MIN_FOTBOLL_STANDINGS: LeagueStanding[] = [
+  { team: "Örgryte IS", games: 11, wins: 11, draws: 0, losses: 0, goalsFor: 50, goalsAgainst: 15, points: 33, form: ["V", "V", "V", "V", "V"] },
+  { team: "Västra Frölunda", games: 11, wins: 7, draws: 2, losses: 2, goalsFor: 52, goalsAgainst: 21, points: 23, form: ["F", "V", "V", "O", "O"] },
+  { team: "Mölnlycke IS", games: 12, wins: 7, draws: 0, losses: 5, goalsFor: 33, goalsAgainst: 21, points: 21, form: ["F", "V", "F", "V", "V"] },
+  { team: "Finlandia Pallo", games: 13, wins: 6, draws: 1, losses: 6, goalsFor: 33, goalsAgainst: 38, points: 19, form: ["V", "V", "F", "V", "O"] },
+  { team: "Croatia Göteborg", games: 10, wins: 6, draws: 0, losses: 4, goalsFor: 45, goalsAgainst: 26, points: 18, form: ["F", "F", "F", "V", "F"] },
+  { team: "IK Zenith", games: 11, wins: 6, draws: 0, losses: 5, goalsFor: 28, goalsAgainst: 27, points: 18, form: ["V", "F", "V", "V", "V"] },
+  { team: "Torslanda IK", games: 11, wins: 5, draws: 2, losses: 4, goalsFor: 23, goalsAgainst: 27, points: 17, form: ["V", "V", "F", "O", "O"] },
+  { team: "Marieholm IK", games: 10, wins: 5, draws: 1, losses: 4, goalsFor: 25, goalsAgainst: 20, points: 16, form: ["V", "V", "F", "F", "O"] },
+  { team: "Ytterby IS", games: 11, wins: 4, draws: 1, losses: 6, goalsFor: 25, goalsAgainst: 33, points: 13, form: ["F", "F", "F", "F", "O"] },
+  { team: "Qviding FIF", games: 12, wins: 4, draws: 0, losses: 8, goalsFor: 28, goalsAgainst: 42, points: 12, form: ["F", "F", "V", "F", "F"] },
+  { team: "Fässbergs IF", games: 9, wins: 1, draws: 0, losses: 8, goalsFor: 14, goalsAgainst: 39, points: 3, form: ["F", "F", "V", "F", "F"] },
+  { team: "Surte IS", games: 11, wins: 0, draws: 1, losses: 10, goalsFor: 12, goalsAgainst: 59, points: 1, form: ["F", "F", "F", "F", "O"] },
+];
+
 function formatMatchDate(value: string | null) {
   if (!value) return "Datum saknas";
 
@@ -588,6 +615,7 @@ export default async function Home() {
         <nav className="sectionNav" aria-label="Sidans innehåll">
           <a href="#match">Match</a>
           <a href="#fakta">Fakta</a>
+          <a href="#serien">Serien</a>
           <a href="#motstandare">Motståndare</a>
           <a href="#kontakt">Kontakt</a>
           <a href="#analys">AI-analys</a>
@@ -756,6 +784,84 @@ export default async function Home() {
                 label="Mål"
               />
             </div>
+          </article>
+
+          <article className="leagueTableCard" id="serien">
+            <div className="leagueTableHeader">
+              <div>
+                <span className="overline">Min Fotboll</span>
+                <h3>Hela serien</h3>
+                <p>66 färdigspelade matcher mellan seriens 12 aktiva lag.</p>
+              </div>
+              <a
+                href="https://minfotboll.svenskfotboll.se/#/leaguesite/73259/table"
+                target="_blank"
+                rel="noreferrer"
+                className="leagueSourceLink"
+              >
+                Öppna källan ↗
+              </a>
+            </div>
+
+            <div className="leagueTableScroll">
+              <table className="leagueTable">
+                <thead>
+                  <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Lag</th>
+                    <th scope="col" title="Matcher">M</th>
+                    <th scope="col" title="Vinster">V</th>
+                    <th scope="col" title="Oavgjorda">O</th>
+                    <th scope="col" title="Förluster">F</th>
+                    <th scope="col">Mål</th>
+                    <th scope="col">+/−</th>
+                    <th scope="col">P</th>
+                    <th scope="col">Senaste 5</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {MIN_FOTBOLL_STANDINGS.map((standing, index) => {
+                    const isFinlandia = standing.team === "Finlandia Pallo";
+                    const isOpponent = dashboard.opponent_name
+                      ?.toLocaleLowerCase("sv-SE")
+                      .includes(standing.team.toLocaleLowerCase("sv-SE"));
+                    const goalDifference = standing.goalsFor - standing.goalsAgainst;
+
+                    return (
+                      <tr
+                        className={isFinlandia ? "finlandiaStanding" : isOpponent ? "opponentStanding" : undefined}
+                        key={standing.team}
+                      >
+                        <td>{index + 1}</td>
+                        <th scope="row">
+                          {standing.team}
+                          {isFinlandia && <span className="standingTag">Vårt lag</span>}
+                          {isOpponent && !isFinlandia && <span className="standingTag opponentTag">Nästa</span>}
+                        </th>
+                        <td>{standing.games}</td>
+                        <td>{standing.wins}</td>
+                        <td>{standing.draws}</td>
+                        <td>{standing.losses}</td>
+                        <td>{standing.goalsFor}–{standing.goalsAgainst}</td>
+                        <td>{goalDifference > 0 ? "+" : ""}{goalDifference}</td>
+                        <td><strong>{standing.points}</strong></td>
+                        <td>
+                          <span className="standingForm" aria-label={`Form: ${standing.form.join(", ")}`}>
+                            {standing.form.map((result, formIndex) => (
+                              <i className={resultClass(result)} key={`${standing.team}-${formIndex}`}>{result}</i>
+                            ))}
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            <p className="leagueTableNote">
+              Insamlat från Min Fotboll den 18 augusti 2026. BK Häcken och Näsets SK är markerade som utgångna och ingår inte.
+            </p>
           </article>
 
           {gamesError ? (

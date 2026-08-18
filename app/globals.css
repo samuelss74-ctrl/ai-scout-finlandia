@@ -1736,6 +1736,172 @@ p {
   }
 }
 
+.leagueTableCard {
+  margin-top: 22px;
+  overflow: hidden;
+  border: 1px solid #dce6f1;
+  border-radius: 25px;
+  background: #ffffff;
+  box-shadow: 0 18px 45px rgba(15, 39, 66, 0.08);
+}
+
+.leagueTableHeader {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 25px 27px 21px;
+}
+
+.leagueTableHeader h3 {
+  margin: 5px 0 4px;
+  color: #0d2b49;
+  font-size: 24px;
+}
+
+.leagueTableHeader p,
+.leagueTableNote {
+  margin: 0;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.leagueSourceLink {
+  flex: 0 0 auto;
+  color: #1769e0;
+  font-size: 14px;
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.leagueSourceLink:hover {
+  text-decoration: underline;
+}
+
+.leagueTableScroll {
+  overflow-x: auto;
+  border-top: 1px solid #e6edf5;
+  border-bottom: 1px solid #e6edf5;
+}
+
+.leagueTable {
+  width: 100%;
+  min-width: 780px;
+  border-collapse: collapse;
+  color: #334155;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.leagueTable th,
+.leagueTable td {
+  padding: 13px 10px;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.leagueTable thead th {
+  background: #f5f8fc;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.leagueTable tbody tr + tr {
+  border-top: 1px solid #edf2f7;
+}
+
+.leagueTable tbody tr:hover {
+  background: #f8fbff;
+}
+
+.leagueTable th:nth-child(2) {
+  min-width: 190px;
+  text-align: left;
+}
+
+.leagueTable tbody th {
+  color: #1e293b;
+  font-weight: 750;
+}
+
+.leagueTable .finlandiaStanding {
+  background: #edf5ff;
+  box-shadow: inset 4px 0 #1769e0;
+}
+
+.leagueTable .opponentStanding {
+  background: #fff7ed;
+  box-shadow: inset 4px 0 #ef8a29;
+}
+
+.standingTag {
+  display: inline-flex;
+  margin-left: 8px;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: #1769e0;
+  color: #ffffff;
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  vertical-align: 1px;
+}
+
+.standingTag.opponentTag {
+  background: #ef8a29;
+}
+
+.standingForm {
+  display: inline-flex;
+  gap: 4px;
+}
+
+.standingForm i {
+  display: grid;
+  width: 22px;
+  height: 22px;
+  place-items: center;
+  border-radius: 7px;
+  color: #ffffff;
+  font-size: 10px;
+  font-style: normal;
+  font-weight: 850;
+}
+
+.standingForm .formWin { background: #179c66; }
+.standingForm .formDraw { background: #e0a11b; }
+.standingForm .formLoss { background: #db4b55; }
+
+.leagueTableNote {
+  padding: 15px 27px 18px;
+}
+
+@media (max-width: 640px) {
+  .leagueTableCard {
+    border-radius: 21px;
+  }
+
+  .leagueTableHeader {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+    padding: 21px;
+  }
+
+  .leagueTable th,
+  .leagueTable td {
+    padding: 12px 8px;
+  }
+
+  .leagueTableNote {
+    padding: 14px 21px 17px;
+  }
+}
+
 /* Solida reservfärger för webbläsare och visningslägen som tar bort gradienter. */
 .matchHero {
   background-color: #061b31;
