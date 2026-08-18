@@ -1965,6 +1965,139 @@ p {
   color: #64748b;
 }
 
+.goalTimingCard {
+  margin-top: 22px;
+  overflow: hidden;
+  border: 1px solid #dce6f1;
+  border-radius: 25px;
+  background: #ffffff;
+  box-shadow: 0 18px 45px rgba(15, 39, 66, 0.08);
+}
+
+.coverageBadge {
+  flex: 0 0 auto;
+  padding: 7px 11px;
+  border-radius: 999px;
+  background: #fff3d6;
+  color: #8a5b00;
+  font-size: 11px;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.goalTimingBody {
+  padding: 0 27px 27px;
+}
+
+.goalTimingIdentity {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 0;
+  border-top: 1px solid #e6edf5;
+  border-bottom: 1px solid #e6edf5;
+}
+
+.goalTimingIdentity h4 {
+  margin: 4px 0 0;
+  color: #334155;
+  font-size: 15px;
+}
+
+.goalTimingIdentity > strong {
+  color: #0d2b49;
+  font-size: 28px;
+}
+
+.goalTimingColumns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  padding: 20px 0 25px;
+}
+
+.goalTimingColumns section {
+  padding: 18px;
+  border-radius: 18px;
+  background: #f7f9fc;
+}
+
+.goalTimingLabel {
+  font-size: 11px;
+  font-weight: 850;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.scoredLabel { color: #087443; }
+.concededLabel { color: #b4232d; }
+
+.minuteChips {
+  display: flex;
+  gap: 8px;
+  margin: 12px 0 10px;
+}
+
+.minuteChips strong {
+  display: grid;
+  min-width: 46px;
+  height: 38px;
+  place-items: center;
+  border-radius: 12px;
+  background: #dcfce7;
+  color: #087443;
+  font-size: 16px;
+}
+
+.concededChips strong {
+  background: #fee2e2;
+  color: #b4232d;
+}
+
+.goalTimingColumns p {
+  margin: 0;
+  color: #64748b;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.matchTimeline {
+  position: relative;
+  height: 8px;
+  margin: 16px 12px 20px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #dbe6f2 0 49.7%, #b8c9dc 49.7% 50.3%, #dbe6f2 50.3% 100%);
+}
+
+.timelineStart,
+.timelineHalf,
+.timelineEnd {
+  position: absolute;
+  top: 17px;
+  color: #94a3b8;
+  font-size: 10px;
+  font-weight: 750;
+}
+
+.timelineStart { left: 0; }
+.timelineHalf { left: 50%; transform: translateX(-50%); }
+.timelineEnd { right: 0; }
+
+.timelineGoal {
+  position: absolute;
+  top: 50%;
+  width: 16px;
+  height: 16px;
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  box-shadow: 0 2px 7px rgba(15, 39, 66, 0.24);
+}
+
+.scoredGoal { background: #179c66; }
+.concededGoal { background: #db4b55; }
+
 @media (max-width: 640px) {
   .leagueTableCard {
     border-radius: 21px;
@@ -1972,6 +2105,18 @@ p {
 
   .leagueComparisonCard {
     border-radius: 21px;
+  }
+
+  .goalTimingCard {
+    border-radius: 21px;
+  }
+
+  .goalTimingBody {
+    padding: 0 21px 25px;
+  }
+
+  .goalTimingColumns {
+    grid-template-columns: 1fr;
   }
 
   .leagueTableHeader {

@@ -67,6 +67,15 @@ const MIN_FOTBOLL_LATEST_GAME: GameRow = {
   is_canceled: false,
 };
 
+const REPORTED_GOAL_TIMING = {
+  team: "Torslanda IK",
+  opponent: "Finlandia Pallo",
+  score: "2–2",
+  matchesCovered: 1,
+  goalsFor: [19, 31],
+  goalsAgainst: [67, 80],
+};
+
 function formatMatchDate(value: string | null) {
   if (!value) return "Datum saknas";
 
@@ -1006,6 +1015,70 @@ export default async function Home() {
 
             <p className="leagueTableNote">
               Grönt betyder bättre än Finlandia. För insläppta mål är ett lägre värde bättre.
+            </p>
+          </article>
+
+          <article className="goalTimingCard">
+            <div className="leagueTableHeader">
+              <div>
+                <span className="overline">Rapporterade matchhändelser</span>
+                <h3>När gör motståndarna mål?</h3>
+                <p>Endast matcher där Min Fotboll innehåller verifierade målminuter visas.</p>
+              </div>
+              <span className="coverageBadge">1 match i underlaget</span>
+            </div>
+
+            <div className="goalTimingBody">
+              <div className="goalTimingIdentity">
+                <div>
+                  <span className="teamMiniLabel">{REPORTED_GOAL_TIMING.team}</span>
+                  <h4>Mot {REPORTED_GOAL_TIMING.opponent}</h4>
+                </div>
+                <strong>{REPORTED_GOAL_TIMING.score}</strong>
+              </div>
+
+              <div className="goalTimingColumns">
+                <section>
+                  <span className="goalTimingLabel scoredLabel">Gjorda mål</span>
+                  <div className="minuteChips">
+                    {REPORTED_GOAL_TIMING.goalsFor.map((minute) => (
+                      <strong key={`for-${minute}`}>{minute}&prime;</strong>
+                    ))}
+                  </div>
+                  <p>Båda målen kom under matchens första 35 minuter.</p>
+                </section>
+
+                <section>
+                  <span className="goalTimingLabel concededLabel">Insläppta mål</span>
+                  <div className="minuteChips concededChips">
+                    {REPORTED_GOAL_TIMING.goalsAgainst.map((minute) => (
+                      <strong key={`against-${minute}`}>{minute}&prime;</strong>
+                    ))}
+                  </div>
+                  <p>Båda målen släpptes in efter minut 65.</p>
+                </section>
+              </div>
+
+              <div className="matchTimeline" aria-label="Måltidslinje från minut 0 till 90">
+                <span className="timelineStart">0</span>
+                <span className="timelineHalf">45</span>
+                <span className="timelineEnd">90</span>
+                {[...REPORTED_GOAL_TIMING.goalsFor, ...REPORTED_GOAL_TIMING.goalsAgainst].map((minute) => {
+                  const wasScored = REPORTED_GOAL_TIMING.goalsFor.includes(minute);
+                  return (
+                    <i
+                      className={wasScored ? "timelineGoal scoredGoal" : "timelineGoal concededGoal"}
+                      style={{ left: `${(minute / 90) * 100}%` }}
+                      title={`${minute}': ${wasScored ? "Torslanda gjorde mål" : "Finlandia gjorde mål"}`}
+                      key={`timeline-${minute}`}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+
+            <p className="leagueTableNote">
+              Begränsat underlag: slutsatsen gäller den rapporterade matchen Finlandia–Torslanda och ska inte tolkas som ett säsongsmönster.
             </p>
           </article>
 
