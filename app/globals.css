@@ -1880,8 +1880,97 @@ p {
   padding: 15px 27px 18px;
 }
 
+.leagueComparisonCard {
+  margin-top: 22px;
+  overflow: hidden;
+  border: 1px solid #dce6f1;
+  border-radius: 25px;
+  background: #ffffff;
+  box-shadow: 0 18px 45px rgba(15, 39, 66, 0.08);
+}
+
+.deltaLegend {
+  display: flex;
+  gap: 14px;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.deltaLegend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.deltaLegend i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+}
+
+.positiveKey { background: #179c66; }
+.negativeKey { background: #db4b55; }
+
+.comparisonTable {
+  min-width: 940px;
+}
+
+.comparisonTable th:first-child {
+  min-width: 190px;
+  text-align: left;
+}
+
+.comparisonTable th:nth-child(2) {
+  min-width: auto;
+  text-align: center;
+}
+
+.comparisonTable thead th:nth-child(3),
+.comparisonTable thead th:nth-child(5),
+.comparisonTable thead th:nth-child(7),
+.comparisonTable thead th:nth-child(9) {
+  background: #edf2f8;
+}
+
+.comparisonTable td:nth-child(3),
+.comparisonTable td:nth-child(5),
+.comparisonTable td:nth-child(7),
+.comparisonTable td:nth-child(9) {
+  background: rgba(241, 245, 249, 0.62);
+}
+
+.comparisonDelta {
+  display: inline-flex;
+  min-width: 48px;
+  justify-content: center;
+  padding: 4px 7px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 850;
+}
+
+.positiveDelta {
+  background: #dcfce7;
+  color: #087443;
+}
+
+.negativeDelta {
+  background: #fee2e2;
+  color: #b4232d;
+}
+
+.neutralDelta {
+  background: #e2e8f0;
+  color: #64748b;
+}
+
 @media (max-width: 640px) {
   .leagueTableCard {
+    border-radius: 21px;
+  }
+
+  .leagueComparisonCard {
     border-radius: 21px;
   }
 

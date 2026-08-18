@@ -154,6 +154,28 @@ function formatMetric(value: number) {
   }).format(value);
 }
 
+function formPoints(form: string[]) {
+  return form.reduce(
+    (points, result) => points + (result === "V" ? 3 : result === "O" ? 1 : 0),
+    0,
+  );
+}
+
+function comparisonDelta(value: number, baseline: number, inverse = false) {
+  const delta = value - baseline;
+  const favorable = inverse ? delta < 0 : delta > 0;
+  const unfavorable = inverse ? delta > 0 : delta < 0;
+
+  return {
+    label: `${delta > 0 ? "+" : ""}${formatMetric(delta)}`,
+    className: favorable
+      ? "positiveDelta"
+      : unfavorable
+        ? "negativeDelta"
+        : "neutralDelta",
+  };
+}
+
 function phoneLink(value: string | null) {
   if (!value) return "";
   return `tel:${value.replace(/[^\d+]/g, "")}`;
@@ -905,6 +927,85 @@ export default async function Home() {
 
             <p className="leagueTableNote">
               Insamlat från Min Fotboll den 18 augusti 2026. BK Häcken och Näsets SK är markerade som utgångna och ingår inte.
+            </p>
+          </article>
+
+          <article className="leagueComparisonCard">
+            <div className="leagueTableHeader">
+              <div>
+                <span className="overline">Lag för lag</span>
+                <h3>Jämfört med Finlandia</h3>
+                <p>Skillnader per match gör jämförelsen rättvis trots olika antal spelade matcher.</p>
+              </div>
+              <div className="deltaLegend" aria-label="Förklaring till skillnader">
+                <span><i className="positiveKey" />Bättre</span>
+                <span><i className="negativeKey" />Sämre</span>
+              </div>
+            </div>
+
+            <div className="leagueTableScroll">
+              <table className="leagueTable comparisonTable">
+                <thead>
+                  <tr>
+                    <th scope="col">Lag</th>
+                    <th scope="col">P/match</th>
+                    <th scope="col">Mot Finlandia</th>
+                    <th scope="col">Gjorda/match</th>
+                    <th scope="col">Mot Finlandia</th>
+                    <th scope="col">Insläppta/match</th>
+                    <th scope="col">Mot Finlandia</th>
+                    <th scope="col">Formpoäng</th>
+                    <th scope="col">Mot Finlandia</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {MIN_FOTBOLL_STANDINGS.map((standing) => {
+                    const isFinlandia = standing.team === finlandiaStanding.team;
+                    const pointsPerGame = standing.points / standing.games;
+                    const goalsForPerGame = standing.goalsFor / standing.games;
+                    const goalsAgainstPerGame = standing.goalsAgainst / standing.games;
+                    const recentPoints = formPoints(standing.form);
+                    const pointsDelta = comparisonDelta(
+                      pointsPerGame,
+                      finlandiaStanding.points / finlandiaStanding.games,
+                    );
+                    const goalsForDelta = comparisonDelta(
+                      goalsForPerGame,
+                      finlandiaStanding.goalsFor / finlandiaStanding.games,
+                    );
+                    const goalsAgainstDelta = comparisonDelta(
+                      goalsAgainstPerGame,
+                      finlandiaStanding.goalsAgainst / finlandiaStanding.games,
+                      true,
+                    );
+                    const formDelta = comparisonDelta(
+                      recentPoints,
+                      formPoints(finlandiaStanding.form),
+                    );
+
+                    return (
+                      <tr className={isFinlandia ? "finlandiaStanding" : undefined} key={`comparison-${standing.team}`}>
+                        <th scope="row">
+                          {standing.team}
+                          {isFinlandia && <span className="standingTag">Baslinje</span>}
+                        </th>
+                        <td>{formatMetric(pointsPerGame)}</td>
+                        <td><span className={`comparisonDelta ${pointsDelta.className}`}>{isFinlandia ? "–" : pointsDelta.label}</span></td>
+                        <td>{formatMetric(goalsForPerGame)}</td>
+                        <td><span className={`comparisonDelta ${goalsForDelta.className}`}>{isFinlandia ? "–" : goalsForDelta.label}</span></td>
+                        <td>{formatMetric(goalsAgainstPerGame)}</td>
+                        <td><span className={`comparisonDelta ${goalsAgainstDelta.className}`}>{isFinlandia ? "–" : goalsAgainstDelta.label}</span></td>
+                        <td>{recentPoints} / 15</td>
+                        <td><span className={`comparisonDelta ${formDelta.className}`}>{isFinlandia ? "–" : formDelta.label}</span></td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            <p className="leagueTableNote">
+              Grönt betyder bättre än Finlandia. För insläppta mål är ett lägre värde bättre.
             </p>
           </article>
 
