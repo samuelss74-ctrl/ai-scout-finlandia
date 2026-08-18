@@ -595,7 +595,7 @@ export default async function Home() {
   const matchTime =
     dashboard.opponent_name === "Surte IS FK" &&
     String(dashboard.match_time).startsWith("2026-08-18")
-      ? "2026-08-18T11:00:00+02:00"
+      ? "2026-08-18T20:00:00+02:00"
       : dashboard.match_time;
 
   const isFinlandiaHome = dashboard.finlandia_home_away === "HOME";
