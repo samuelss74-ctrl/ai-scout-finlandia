@@ -1,0 +1,186 @@
+{
+  "schemaVersion": "1.0",
+  "generatedAt": "2026-08-18",
+  "source": {
+    "name": "Min Fotboll",
+    "url": "https://minfotboll.svenskfotboll.se/#/leaguesite/73259",
+    "leagueId": 73259,
+    "checkedAt": "2026-08-18"
+  },
+  "competition": {
+    "name": "Pojkar 2011(15 år) Svår Grupp A 2026",
+    "season": 2026,
+    "gender": "Male",
+    "matchLength": "2x40",
+    "registeredTeams": 14,
+    "activeTeams": 12,
+    "tableCountingMatches": 66,
+    "allVisiblePlayedMatchesIncludingWithdrawnTeams": 76
+  },
+  "formLegend": {
+    "W": "win",
+    "D": "draw",
+    "L": "loss"
+  },
+  "dataQuality": {
+    "teamTable": "Complete for the 12 active teams at the time checked.",
+    "homeAwaySplits": "Calculated from the recorded table-counting results.",
+    "form": "The five most recent table-counting results, oldest to newest.",
+    "playerStatistics": "Min Fotboll's central player-statistics table was empty when checked. Goal and card events are available only for matches that were live reported and must not be treated as complete season totals.",
+    "withdrawnTeams": "Matches involving withdrawn teams are excluded from the active league table but may remain visible in Min Fotboll's match list."
+  },
+  "withdrawnTeams": [
+    "BK Häcken Svart",
+    "Näsets SK P2011 1"
+  ],
+  "teams": [
+    {
+      "position": 1,
+      "name": "Örgryte IS Fotboll",
+      "overall": { "played": 11, "wins": 11, "draws": 0, "losses": 0, "goalsFor": 50, "goalsAgainst": 15, "goalDifference": 35, "points": 33 },
+      "home": { "played": 5, "wins": 5, "draws": 0, "losses": 0, "goalsFor": 22, "goalsAgainst": 4 },
+      "away": { "played": 6, "wins": 6, "draws": 0, "losses": 0, "goalsFor": 28, "goalsAgainst": 11 },
+      "lastFive": ["W", "W", "W", "W", "W"]
+    },
+    {
+      "position": 2,
+      "name": "Västra Frölunda IF",
+      "overall": { "played": 11, "wins": 7, "draws": 2, "losses": 2, "goalsFor": 52, "goalsAgainst": 21, "goalDifference": 31, "points": 23 },
+      "home": { "played": 5, "wins": 5, "draws": 0, "losses": 0, "goalsFor": 28, "goalsAgainst": 6 },
+      "away": { "played": 6, "wins": 2, "draws": 2, "losses": 2, "goalsFor": 24, "goalsAgainst": 15 },
+      "lastFive": ["L", "W", "W", "D", "D"]
+    },
+    {
+      "position": 3,
+      "name": "Mölnlycke IS Ungdom",
+      "overall": { "played": 12, "wins": 7, "draws": 0, "losses": 5, "goalsFor": 33, "goalsAgainst": 21, "goalDifference": 12, "points": 21 },
+      "home": { "played": 6, "wins": 2, "draws": 0, "losses": 4, "goalsFor": 11, "goalsAgainst": 11 },
+      "away": { "played": 6, "wins": 5, "draws": 0, "losses": 1, "goalsFor": 22, "goalsAgainst": 10 },
+      "lastFive": ["L", "W", "L", "W", "W"]
+    },
+    {
+      "position": 4,
+      "name": "Finlandia Pallo AIF",
+      "overall": { "played": 13, "wins": 6, "draws": 1, "losses": 6, "goalsFor": 33, "goalsAgainst": 38, "goalDifference": -5, "points": 19 },
+      "home": { "played": 6, "wins": 3, "draws": 1, "losses": 2, "goalsFor": 18, "goalsAgainst": 14 },
+      "away": { "played": 7, "wins": 3, "draws": 0, "losses": 4, "goalsFor": 15, "goalsAgainst": 24 },
+      "lastFive": ["W", "W", "L", "W", "D"]
+    },
+    {
+      "position": 5,
+      "name": "Croatia Göteborg",
+      "overall": { "played": 10, "wins": 6, "draws": 0, "losses": 4, "goalsFor": 45, "goalsAgainst": 26, "goalDifference": 19, "points": 18 },
+      "home": { "played": 5, "wins": 2, "draws": 0, "losses": 3, "goalsFor": 25, "goalsAgainst": 15 },
+      "away": { "played": 5, "wins": 4, "draws": 0, "losses": 1, "goalsFor": 20, "goalsAgainst": 11 },
+      "lastFive": ["L", "L", "L", "W", "L"]
+    },
+    {
+      "position": 6,
+      "name": "IK Zenith",
+      "overall": { "played": 11, "wins": 6, "draws": 0, "losses": 5, "goalsFor": 28, "goalsAgainst": 27, "goalDifference": 1, "points": 18 },
+      "home": { "played": 6, "wins": 4, "draws": 0, "losses": 2, "goalsFor": 20, "goalsAgainst": 13 },
+      "away": { "played": 5, "wins": 2, "draws": 0, "losses": 3, "goalsFor": 8, "goalsAgainst": 14 },
+      "lastFive": ["W", "L", "W", "W", "W"]
+    },
+    {
+      "position": 7,
+      "name": "Torslanda IK",
+      "overall": { "played": 11, "wins": 5, "draws": 2, "losses": 4, "goalsFor": 23, "goalsAgainst": 27, "goalDifference": -4, "points": 17 },
+      "home": { "played": 6, "wins": 3, "draws": 0, "losses": 3, "goalsFor": 12, "goalsAgainst": 15 },
+      "away": { "played": 5, "wins": 2, "draws": 2, "losses": 1, "goalsFor": 11, "goalsAgainst": 12 },
+      "lastFive": ["W", "W", "L", "D", "D"]
+    },
+    {
+      "position": 8,
+      "name": "Marieholm IK",
+      "overall": { "played": 10, "wins": 5, "draws": 1, "losses": 4, "goalsFor": 25, "goalsAgainst": 20, "goalDifference": 5, "points": 16 },
+      "home": { "played": 5, "wins": 2, "draws": 1, "losses": 2, "goalsFor": 12, "goalsAgainst": 11 },
+      "away": { "played": 5, "wins": 3, "draws": 0, "losses": 2, "goalsFor": 13, "goalsAgainst": 9 },
+      "lastFive": ["W", "W", "L", "L", "D"]
+    },
+    {
+      "position": 9,
+      "name": "Ytterby IS",
+      "overall": { "played": 11, "wins": 4, "draws": 1, "losses": 6, "goalsFor": 25, "goalsAgainst": 33, "goalDifference": -8, "points": 13 },
+      "home": { "played": 6, "wins": 3, "draws": 1, "losses": 2, "goalsFor": 19, "goalsAgainst": 14 },
+      "away": { "played": 5, "wins": 1, "draws": 0, "losses": 4, "goalsFor": 6, "goalsAgainst": 19 },
+      "lastFive": ["L", "L", "L", "L", "D"]
+    },
+    {
+      "position": 10,
+      "name": "Qviding FIF",
+      "overall": { "played": 12, "wins": 4, "draws": 0, "losses": 8, "goalsFor": 28, "goalsAgainst": 42, "goalDifference": -14, "points": 12 },
+      "home": { "played": 7, "wins": 2, "draws": 0, "losses": 5, "goalsFor": 17, "goalsAgainst": 20 },
+      "away": { "played": 5, "wins": 2, "draws": 0, "losses": 3, "goalsFor": 11, "goalsAgainst": 22 },
+      "lastFive": ["L", "L", "W", "L", "L"]
+    },
+    {
+      "position": 11,
+      "name": "Fässbergs IF",
+      "overall": { "played": 9, "wins": 1, "draws": 0, "losses": 8, "goalsFor": 14, "goalsAgainst": 39, "goalDifference": -25, "points": 3 },
+      "home": { "played": 4, "wins": 1, "draws": 0, "losses": 3, "goalsFor": 12, "goalsAgainst": 14 },
+      "away": { "played": 5, "wins": 0, "draws": 0, "losses": 5, "goalsFor": 2, "goalsAgainst": 25 },
+      "lastFive": ["L", "L", "W", "L", "L"]
+    },
+    {
+      "position": 12,
+      "name": "Surte IS FK",
+      "overall": { "played": 11, "wins": 0, "draws": 1, "losses": 10, "goalsFor": 12, "goalsAgainst": 59, "goalDifference": -47, "points": 1 },
+      "home": { "played": 5, "wins": 0, "draws": 1, "losses": 4, "goalsFor": 7, "goalsAgainst": 28 },
+      "away": { "played": 6, "wins": 0, "draws": 0, "losses": 6, "goalsFor": 5, "goalsAgainst": 31 },
+      "lastFive": ["L", "L", "L", "L", "D"]
+    }
+  ],
+  "verifiedMatchEvents": [
+    {
+      "matchId": 2055999,
+      "homeTeam": "Finlandia Pallo AIF",
+      "awayTeam": "Torslanda IK",
+      "score": "2-2",
+      "coverage": "verified visible events",
+      "events": [
+        { "minute": 19, "type": "goal", "score": "0-1", "player": "Arvid Dahlin" },
+        { "minute": 23, "type": "yellowCard", "player": "Hugo Nyberg" },
+        { "minute": 31, "type": "goal", "score": "0-2", "player": "Arvid Dahlin" },
+        { "minute": 67, "type": "goal", "score": "1-2", "player": "Charlie Torkkeli" },
+        { "minute": 72, "type": "yellowCard", "player": "Wilton Falk" },
+        { "minute": 72, "type": "redCard", "player": "Wilton Falk" },
+        { "minute": 80, "type": "goal", "score": "2-2", "player": "Arvid Valdusson" }
+      ]
+    },
+    {
+      "matchId": 2055956,
+      "homeTeam": "Qviding FIF",
+      "awayTeam": "Finlandia Pallo AIF",
+      "score": "1-4",
+      "coverage": "verified visible events",
+      "events": [
+        { "minute": 2, "type": "goal", "score": "1-0", "player": "Melker Bohlin" },
+        { "minute": 39, "type": "yellowCard", "player": "Zantael Tekie" },
+        { "minute": 43, "type": "redCard", "player": "Jonatan Blaho" },
+        { "minute": 54, "type": "goal", "score": "1-1", "player": "Leo Hogart" },
+        { "minute": 57, "type": "goal", "score": "1-2", "player": "Lee-Brown Ntwari" },
+        { "minute": 63, "type": "goal", "score": "1-3", "player": "Pa Ousmane Aidara" },
+        { "minute": 66, "type": "goal", "score": "1-4", "player": "Leo Andersson" }
+      ]
+    },
+    {
+      "matchId": 2055950,
+      "homeTeam": "Marieholm IK",
+      "awayTeam": "Västra Frölunda IF",
+      "score": "4-4",
+      "coverage": "partial second-half excerpt",
+      "events": [
+        { "minute": 46, "type": "penaltyKick", "team": "Västra Frölunda IF" },
+        { "minute": 48, "type": "goal", "score": "0-4", "player": "Ahmad Alwani" },
+        { "minute": 70, "type": "goal", "score": "1-4", "player": "Tahir Gerguri" },
+        { "minute": 74, "type": "yellowCard", "team": "Västra Frölunda IF", "player": "Emin Melik" },
+        { "minute": 75, "type": "goal", "score": "2-4", "player": "Tahir Gerguri" },
+        { "minute": 76, "type": "goal", "score": "3-4", "player": "Adrian Sulejmani" },
+        { "minute": 79, "type": "goal", "score": "4-4", "player": "Tahir Gerguri" },
+        { "minute": 80, "type": "yellowCard", "team": "Marieholm IK", "player": "Tahir Gerguri" }
+      ]
+    }
+  ]
+}
+

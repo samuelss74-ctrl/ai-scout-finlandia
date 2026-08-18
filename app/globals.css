@@ -1913,7 +1913,7 @@ p {
 .negativeKey { background: #db4b55; }
 
 .comparisonTable {
-  min-width: 940px;
+  min-width: 1080px;
 }
 
 .comparisonTable th:first-child {
@@ -1927,16 +1927,16 @@ p {
 }
 
 .comparisonTable thead th:nth-child(3),
-.comparisonTable thead th:nth-child(5),
 .comparisonTable thead th:nth-child(7),
-.comparisonTable thead th:nth-child(9) {
+.comparisonTable thead th:nth-child(9),
+.comparisonTable thead th:nth-child(11) {
   background: #edf2f8;
 }
 
 .comparisonTable td:nth-child(3),
-.comparisonTable td:nth-child(5),
 .comparisonTable td:nth-child(7),
-.comparisonTable td:nth-child(9) {
+.comparisonTable td:nth-child(9),
+.comparisonTable td:nth-child(11) {
   background: rgba(241, 245, 249, 0.62);
 }
 
@@ -1987,6 +1987,10 @@ p {
 
 .goalTimingBody {
   padding: 0 27px 27px;
+}
+
+.goalTimingBody + .goalTimingBody {
+  border-top: 8px solid #f1f5f9;
 }
 
 .goalTimingIdentity {
@@ -2060,6 +2064,13 @@ p {
   color: #64748b;
   font-size: 13px;
   line-height: 1.5;
+}
+
+.noReportedGoals {
+  align-self: center;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 .matchTimeline {

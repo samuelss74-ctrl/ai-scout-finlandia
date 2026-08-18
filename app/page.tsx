@@ -1,4 +1,5 @@
 import { getSupabaseServerClient } from "../lib/supabase-server";
+import minFotbollData from "../data/minfotboll-series-data.json";
 
 export const dynamic = "force-dynamic";
 
@@ -37,22 +38,29 @@ type LeagueStanding = {
   goalsAgainst: number;
   points: number;
   form: string[];
+  homePointsPerGame: number;
+  awayPointsPerGame: number;
 };
 
-const MIN_FOTBOLL_STANDINGS: LeagueStanding[] = [
-  { team: "Örgryte IS", games: 11, wins: 11, draws: 0, losses: 0, goalsFor: 50, goalsAgainst: 15, points: 33, form: ["V", "V", "V", "V", "V"] },
-  { team: "Västra Frölunda", games: 11, wins: 7, draws: 2, losses: 2, goalsFor: 52, goalsAgainst: 21, points: 23, form: ["F", "V", "V", "O", "O"] },
-  { team: "Mölnlycke IS", games: 12, wins: 7, draws: 0, losses: 5, goalsFor: 33, goalsAgainst: 21, points: 21, form: ["F", "V", "F", "V", "V"] },
-  { team: "Finlandia Pallo", games: 13, wins: 6, draws: 1, losses: 6, goalsFor: 33, goalsAgainst: 38, points: 19, form: ["V", "V", "F", "V", "O"] },
-  { team: "Croatia Göteborg", games: 10, wins: 6, draws: 0, losses: 4, goalsFor: 45, goalsAgainst: 26, points: 18, form: ["F", "F", "F", "V", "F"] },
-  { team: "IK Zenith", games: 11, wins: 6, draws: 0, losses: 5, goalsFor: 28, goalsAgainst: 27, points: 18, form: ["V", "F", "V", "V", "V"] },
-  { team: "Torslanda IK", games: 11, wins: 5, draws: 2, losses: 4, goalsFor: 23, goalsAgainst: 27, points: 17, form: ["V", "V", "F", "O", "O"] },
-  { team: "Marieholm IK", games: 10, wins: 5, draws: 1, losses: 4, goalsFor: 25, goalsAgainst: 20, points: 16, form: ["V", "V", "F", "F", "O"] },
-  { team: "Ytterby IS", games: 11, wins: 4, draws: 1, losses: 6, goalsFor: 25, goalsAgainst: 33, points: 13, form: ["F", "F", "F", "F", "O"] },
-  { team: "Qviding FIF", games: 12, wins: 4, draws: 0, losses: 8, goalsFor: 28, goalsAgainst: 42, points: 12, form: ["F", "F", "V", "F", "F"] },
-  { team: "Fässbergs IF", games: 9, wins: 1, draws: 0, losses: 8, goalsFor: 14, goalsAgainst: 39, points: 3, form: ["F", "F", "V", "F", "F"] },
-  { team: "Surte IS", games: 11, wins: 0, draws: 1, losses: 10, goalsFor: 12, goalsAgainst: 59, points: 1, form: ["F", "F", "F", "F", "O"] },
-];
+const MIN_FOTBOLL_STANDINGS: LeagueStanding[] = minFotbollData.teams.map(
+  (team) => ({
+    team: team.name,
+    games: team.overall.played,
+    wins: team.overall.wins,
+    draws: team.overall.draws,
+    losses: team.overall.losses,
+    goalsFor: team.overall.goalsFor,
+    goalsAgainst: team.overall.goalsAgainst,
+    points: team.overall.points,
+    homePointsPerGame:
+      (team.home.wins * 3 + team.home.draws) / team.home.played,
+    awayPointsPerGame:
+      (team.away.wins * 3 + team.away.draws) / team.away.played,
+    form: team.lastFive.map((result) =>
+      result === "W" ? "V" : result === "D" ? "O" : "F",
+    ),
+  }),
+);
 
 const MIN_FOTBOLL_LATEST_GAME: GameRow = {
   game_id: 2055999,
@@ -67,14 +75,37 @@ const MIN_FOTBOLL_LATEST_GAME: GameRow = {
   is_canceled: false,
 };
 
-const REPORTED_GOAL_TIMING = {
-  team: "Torslanda IK",
-  opponent: "Finlandia Pallo",
-  score: "2–2",
-  matchesCovered: 1,
-  goalsFor: [19, 31],
-  goalsAgainst: [67, 80],
-};
+const REPORTED_GOAL_TIMING = minFotbollData.verifiedMatchEvents.map((match) => {
+  let homeGoals = 0;
+  let awayGoals = 0;
+
+  const goals = match.events
+    .filter((event) => event.type === "goal" && "score" in event)
+    .map((event) => {
+      const [nextHomeGoals, nextAwayGoals] = event.score!
+        .split("-")
+        .map(Number);
+      const scoringTeam =
+        nextHomeGoals > homeGoals ? match.homeTeam : match.awayTeam;
+      homeGoals = nextHomeGoals;
+      awayGoals = nextAwayGoals;
+
+      return {
+        minute: event.minute,
+        player: "player" in event ? event.player : undefined,
+        team: scoringTeam,
+      };
+    });
+
+  return {
+    matchId: match.matchId,
+    homeTeam: match.homeTeam,
+    awayTeam: match.awayTeam,
+    score: match.score.replace("-", "–"),
+    coverage: match.coverage,
+    goals,
+  };
+});
 
 function formatMatchDate(value: string | null) {
   if (!value) return "Datum saknas";
@@ -605,7 +636,7 @@ export default async function Home() {
   );
 
   const finlandiaStanding = MIN_FOTBOLL_STANDINGS.find(
-    (standing) => standing.team === "Finlandia Pallo",
+    (standing) => standing.team === "Finlandia Pallo AIF",
   )!;
   const opponentStanding = MIN_FOTBOLL_STANDINGS.find((standing) => {
     const dashboardName = String(dashboard.opponent_name).toLocaleLowerCase("sv-SE");
@@ -896,7 +927,7 @@ export default async function Home() {
                 </thead>
                 <tbody>
                   {MIN_FOTBOLL_STANDINGS.map((standing, index) => {
-                    const isFinlandia = standing.team === "Finlandia Pallo";
+                    const isFinlandia = standing.team === "Finlandia Pallo AIF";
                     const isOpponent = dashboard.opponent_name
                       ?.toLocaleLowerCase("sv-SE")
                       .includes(standing.team.toLocaleLowerCase("sv-SE"));
@@ -959,6 +990,8 @@ export default async function Home() {
                     <th scope="col">Lag</th>
                     <th scope="col">P/match</th>
                     <th scope="col">Mot Finlandia</th>
+                    <th scope="col">Hemma P/m</th>
+                    <th scope="col">Borta P/m</th>
                     <th scope="col">Gjorda/match</th>
                     <th scope="col">Mot Finlandia</th>
                     <th scope="col">Insläppta/match</th>
@@ -1000,6 +1033,8 @@ export default async function Home() {
                         </th>
                         <td>{formatMetric(pointsPerGame)}</td>
                         <td><span className={`comparisonDelta ${pointsDelta.className}`}>{isFinlandia ? "–" : pointsDelta.label}</span></td>
+                        <td>{formatMetric(standing.homePointsPerGame)}</td>
+                        <td>{formatMetric(standing.awayPointsPerGame)}</td>
                         <td>{formatMetric(goalsForPerGame)}</td>
                         <td><span className={`comparisonDelta ${goalsForDelta.className}`}>{isFinlandia ? "–" : goalsForDelta.label}</span></td>
                         <td>{formatMetric(goalsAgainstPerGame)}</td>
@@ -1025,60 +1060,70 @@ export default async function Home() {
                 <h3>När gör motståndarna mål?</h3>
                 <p>Endast matcher där Min Fotboll innehåller verifierade målminuter visas.</p>
               </div>
-              <span className="coverageBadge">1 match i underlaget</span>
+              <span className="coverageBadge">
+                {REPORTED_GOAL_TIMING.length} matcher i underlaget
+              </span>
             </div>
 
-            <div className="goalTimingBody">
-              <div className="goalTimingIdentity">
-                <div>
-                  <span className="teamMiniLabel">{REPORTED_GOAL_TIMING.team}</span>
-                  <h4>Mot {REPORTED_GOAL_TIMING.opponent}</h4>
-                </div>
-                <strong>{REPORTED_GOAL_TIMING.score}</strong>
-              </div>
+            <div className="goalTimingMatches">
+              {REPORTED_GOAL_TIMING.map((match) => {
+                const homeGoals = match.goals.filter(
+                  (goal) => goal.team === match.homeTeam,
+                );
+                const awayGoals = match.goals.filter(
+                  (goal) => goal.team === match.awayTeam,
+                );
+                const isPartial = match.coverage.toLowerCase().includes("partial");
 
-              <div className="goalTimingColumns">
-                <section>
-                  <span className="goalTimingLabel scoredLabel">Gjorda mål</span>
-                  <div className="minuteChips">
-                    {REPORTED_GOAL_TIMING.goalsFor.map((minute) => (
-                      <strong key={`for-${minute}`}>{minute}&prime;</strong>
-                    ))}
-                  </div>
-                  <p>Båda målen kom under matchens första 35 minuter.</p>
-                </section>
+                return (
+                  <section className="goalTimingBody" key={match.matchId}>
+                    <div className="goalTimingIdentity">
+                      <div>
+                        <span className="teamMiniLabel">
+                          {isPartial ? "Delvis rapporterad" : "Verifierade händelser"}
+                        </span>
+                        <h4>{match.homeTeam}–{match.awayTeam}</h4>
+                      </div>
+                      <strong>{match.score}</strong>
+                    </div>
 
-                <section>
-                  <span className="goalTimingLabel concededLabel">Insläppta mål</span>
-                  <div className="minuteChips concededChips">
-                    {REPORTED_GOAL_TIMING.goalsAgainst.map((minute) => (
-                      <strong key={`against-${minute}`}>{minute}&prime;</strong>
-                    ))}
-                  </div>
-                  <p>Båda målen släpptes in efter minut 65.</p>
-                </section>
-              </div>
+                    <div className="goalTimingColumns">
+                      {[{ team: match.homeTeam, goals: homeGoals, away: false }, { team: match.awayTeam, goals: awayGoals, away: true }].map((side) => (
+                        <section key={`${match.matchId}-${side.team}`}>
+                          <span className={`goalTimingLabel ${side.away ? "concededLabel" : "scoredLabel"}`}>
+                            {side.team}
+                          </span>
+                          <div className={`minuteChips ${side.away ? "concededChips" : ""}`}>
+                            {side.goals.length > 0 ? side.goals.map((goal) => (
+                              <strong title={goal.player ?? undefined} key={`${side.team}-${goal.minute}`}>
+                                {goal.minute}&prime;
+                              </strong>
+                            )) : <span className="noReportedGoals">Inga synliga mål</span>}
+                          </div>
+                        </section>
+                      ))}
+                    </div>
 
-              <div className="matchTimeline" aria-label="Måltidslinje från minut 0 till 90">
-                <span className="timelineStart">0</span>
-                <span className="timelineHalf">45</span>
-                <span className="timelineEnd">90</span>
-                {[...REPORTED_GOAL_TIMING.goalsFor, ...REPORTED_GOAL_TIMING.goalsAgainst].map((minute) => {
-                  const wasScored = REPORTED_GOAL_TIMING.goalsFor.includes(minute);
-                  return (
-                    <i
-                      className={wasScored ? "timelineGoal scoredGoal" : "timelineGoal concededGoal"}
-                      style={{ left: `${(minute / 90) * 100}%` }}
-                      title={`${minute}': ${wasScored ? "Torslanda gjorde mål" : "Finlandia gjorde mål"}`}
-                      key={`timeline-${minute}`}
-                    />
-                  );
-                })}
-              </div>
+                    <div className="matchTimeline" aria-label="Måltidslinje från minut 0 till 80">
+                      <span className="timelineStart">0</span>
+                      <span className="timelineHalf">40</span>
+                      <span className="timelineEnd">80</span>
+                      {match.goals.map((goal) => (
+                        <i
+                          className={goal.team === match.homeTeam ? "timelineGoal scoredGoal" : "timelineGoal concededGoal"}
+                          style={{ left: `${Math.min(100, (goal.minute / 80) * 100)}%` }}
+                          title={`${goal.minute}': ${goal.team}${goal.player ? ` – ${goal.player}` : ""}`}
+                          key={`${match.matchId}-timeline-${goal.minute}-${goal.team}`}
+                        />
+                      ))}
+                    </div>
+                  </section>
+                );
+              })}
             </div>
 
             <p className="leagueTableNote">
-              Begränsat underlag: slutsatsen gäller den rapporterade matchen Finlandia–Torslanda och ska inte tolkas som ett säsongsmönster.
+              Begränsat underlag: endast synliga, verifierade händelser visas. Marieholm–Västra Frölunda innehåller bara ett utdrag från andra halvlek.
             </p>
           </article>
 
