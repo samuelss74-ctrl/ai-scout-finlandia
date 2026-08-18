@@ -54,6 +54,19 @@ const MIN_FOTBOLL_STANDINGS: LeagueStanding[] = [
   { team: "Surte IS", games: 11, wins: 0, draws: 1, losses: 10, goalsFor: 12, goalsAgainst: 59, points: 1, form: ["F", "F", "F", "F", "O"] },
 ];
 
+const MIN_FOTBOLL_LATEST_GAME: GameRow = {
+  game_id: 2055999,
+  home_team_id: TEAM_ID,
+  away_team_id: -1,
+  home_team_name: "Finlandia Pallo AIF",
+  away_team_name: "Torslanda IK",
+  home_goals: 2,
+  away_goals: 2,
+  match_time: "2026-08-16T12:00:00+02:00",
+  is_finished: true,
+  is_canceled: false,
+};
+
 function formatMatchDate(value: string | null) {
   if (!value) return "Datum saknas";
 
@@ -545,16 +558,45 @@ export default async function Home() {
   const contactError = contactResult.error;
   const gamesError = gamesResult.error;
 
-  const seasonGames = (gamesResult.data ?? []) as GameRow[];
+  const databaseGames = (gamesResult.data ?? []) as GameRow[];
+  const seasonGames = databaseGames.some(
+    (game) => game.game_id === MIN_FOTBOLL_LATEST_GAME.game_id,
+  )
+    ? databaseGames
+    : [...databaseGames, MIN_FOTBOLL_LATEST_GAME].sort(
+        (a, b) =>
+          new Date(a.match_time).getTime() - new Date(b.match_time).getTime(),
+      );
   const finlandiaSeasonPoints = buildSeasonPoints(seasonGames, TEAM_ID);
   const opponentSeasonPoints = buildSeasonPoints(
     seasonGames,
     Number(dashboard.opponent_team_id),
   );
 
-  const finlandiaForm = formToSwedish(dashboard.finlandia_form);
+  const finlandiaStanding = MIN_FOTBOLL_STANDINGS.find(
+    (standing) => standing.team === "Finlandia Pallo",
+  )!;
+  const opponentStanding = MIN_FOTBOLL_STANDINGS.find((standing) => {
+    const dashboardName = String(dashboard.opponent_name).toLocaleLowerCase("sv-SE");
+    const standingName = standing.team.toLocaleLowerCase("sv-SE");
+    return dashboardName.includes(standingName) || standingName.includes(dashboardName);
+  });
+  const finlandiaPosition =
+    MIN_FOTBOLL_STANDINGS.findIndex(
+      (standing) => standing.team === finlandiaStanding.team,
+    ) + 1;
+  const opponentPosition = opponentStanding
+    ? MIN_FOTBOLL_STANDINGS.indexOf(opponentStanding) + 1
+    : dashboard.opponent_position;
+  const finlandiaForm = finlandiaStanding.form;
   const opponentForm = formToSwedish(opponent?.form ?? null);
   const matchPlan = splitPlan(aiReport?.match_plan ?? null);
+
+  const matchTime =
+    dashboard.opponent_name === "Surte IS FK" &&
+    String(dashboard.match_time).startsWith("2026-08-18")
+      ? "2026-08-18T11:00:00+02:00"
+      : dashboard.match_time;
 
   const isFinlandiaHome = dashboard.finlandia_home_away === "HOME";
   const homeTeam = isFinlandiaHome
@@ -649,12 +691,12 @@ export default async function Home() {
             <div>
               <span>Datum</span>
               <strong className="capitalize">
-                {formatMatchDate(dashboard.match_time)}
+                {formatMatchDate(matchTime)}
               </strong>
             </div>
             <div>
               <span>Avspark</span>
-              <strong>{formatMatchTime(dashboard.match_time)}</strong>
+              <strong>{formatMatchTime(matchTime)}</strong>
             </div>
             <div>
               <span>Spelplats</span>
@@ -704,16 +746,16 @@ export default async function Home() {
                   <h3>Finlandia</h3>
                 </div>
                 <div className="positionBadge">
-                  <strong>{displayValue(dashboard.finlandia_position)}</strong>
+                  <strong>{finlandiaPosition}</strong>
                   <span>plats</span>
                 </div>
               </div>
 
               <div className="statGrid">
-                <StatItem value={dashboard.finlandia_points} label="Poäng" />
-                <StatItem value={dashboard.finlandia_wins} label="Vinster" />
+                <StatItem value={finlandiaStanding.points} label="Poäng" />
+                <StatItem value={finlandiaStanding.wins} label="Vinster" />
                 <StatItem
-                  value={dashboard.finlandia_goal_difference}
+                  value={finlandiaStanding.goalsFor - finlandiaStanding.goalsAgainst}
                   label="Målskillnad"
                 />
               </div>
@@ -726,16 +768,18 @@ export default async function Home() {
                   <h3>{dashboard.opponent_name}</h3>
                 </div>
                 <div className="positionBadge neutralPosition">
-                  <strong>{displayValue(dashboard.opponent_position)}</strong>
+                  <strong>{displayValue(opponentPosition)}</strong>
                   <span>plats</span>
                 </div>
               </div>
 
               <div className="statGrid">
-                <StatItem value={dashboard.opponent_points} label="Poäng" />
-                <StatItem value={dashboard.opponent_wins} label="Vinster" />
+                <StatItem value={opponentStanding?.points ?? dashboard.opponent_points} label="Poäng" />
+                <StatItem value={opponentStanding?.wins ?? dashboard.opponent_wins} label="Vinster" />
                 <StatItem
-                  value={dashboard.opponent_goal_difference}
+                  value={opponentStanding
+                    ? opponentStanding.goalsFor - opponentStanding.goalsAgainst
+                    : dashboard.opponent_goal_difference}
                   label="Målskillnad"
                 />
               </div>
@@ -776,12 +820,12 @@ export default async function Home() {
             </div>
 
             <div className="formTotals">
-              <StatItem value={dashboard.form_wins ?? 0} label="Vinster" />
-              <StatItem value={dashboard.form_draws ?? 0} label="Oavgjorda" />
-              <StatItem value={dashboard.form_losses ?? 0} label="Förluster" />
+              <StatItem value={finlandiaStanding.wins} label="Säsong V" />
+              <StatItem value={finlandiaStanding.draws} label="Säsong O" />
+              <StatItem value={finlandiaStanding.losses} label="Säsong F" />
               <StatItem
-                value={`${dashboard.form_goals_scored ?? 0}–${dashboard.form_goals_conceded ?? 0}`}
-                label="Mål"
+                value={`${finlandiaStanding.goalsFor}–${finlandiaStanding.goalsAgainst}`}
+                label="Säsongsmål"
               />
             </div>
           </article>
@@ -877,7 +921,9 @@ export default async function Home() {
               opponentExpectedGames={toNumber(
                 opponent?.season_games ?? dashboard.opponent_games,
               )}
-              opponentPointsTotal={toNumber(dashboard.opponent_points)}
+              opponentPointsTotal={toNumber(
+                opponentStanding?.points ?? dashboard.opponent_points,
+              )}
             />
           ) : (
             <div className="card inlineState seasonChartState">
