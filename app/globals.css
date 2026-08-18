@@ -2160,6 +2160,17 @@ p {
   background-color: #0d2b49;
 }
 
+.fallbackReportNotice {
+  margin-bottom: 22px;
+  padding: 13px 15px;
+  border: 1px solid rgba(245, 184, 65, 0.34);
+  border-radius: 13px;
+  background: rgba(245, 184, 65, 0.12);
+  color: #ffe1a3;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
 .brandMark,
 .briefIcon {
   background-color: #1769e0;

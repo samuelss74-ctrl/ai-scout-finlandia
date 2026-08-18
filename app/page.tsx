@@ -652,8 +652,6 @@ export default async function Home() {
     : dashboard.opponent_position;
   const finlandiaForm = finlandiaStanding.form;
   const opponentForm = formToSwedish(opponent?.form ?? null);
-  const matchPlan = splitPlan(aiReport?.match_plan ?? null);
-
   const matchTime =
     dashboard.opponent_name === "Surte IS FK" &&
     String(dashboard.match_time).startsWith("2026-08-18")
@@ -667,6 +665,44 @@ export default async function Home() {
   const awayTeam = isFinlandiaHome
     ? dashboard.opponent_name
     : "Finlandia Pallo AIF";
+
+  const opponentSourceTeam = minFotbollData.teams.find((team) => {
+    const dashboardName = String(dashboard.opponent_name).toLocaleLowerCase("sv-SE");
+    const sourceName = team.name.toLocaleLowerCase("sv-SE");
+    return dashboardName.includes(sourceName) || sourceName.includes(dashboardName);
+  });
+  const relevantSplit = opponentSourceTeam
+    ? isFinlandiaHome
+      ? opponentSourceTeam.away
+      : opponentSourceTeam.home
+    : null;
+  const opponentPointsPerGame = opponentStanding
+    ? opponentStanding.points / opponentStanding.games
+    : 0;
+  const relevantPointsPerGame = relevantSplit?.played
+    ? (relevantSplit.wins * 3 + relevantSplit.draws) / relevantSplit.played
+    : 0;
+  const fallbackReport = {
+    summary: opponentStanding
+      ? `${dashboard.opponent_name} ligger på plats ${opponentPosition} med ${opponentStanding.points} poäng på ${opponentStanding.games} matcher. Laget har gjort ${opponentStanding.goalsFor} mål och släppt in ${opponentStanding.goalsAgainst}. Finlandia går in i matchen som tabellfyra med ${finlandiaStanding.points} poäng.`
+      : `${dashboard.opponent_name} analyseras utifrån den tillgängliga match- och tabellinformationen.`,
+    strengths: opponentStanding
+      ? `Målproduktion: ${formatMetric(opponentStanding.goalsFor / opponentStanding.games)} mål per match.\nAktuell form: ${formPoints(opponentStanding.form)} av 15 möjliga poäng på de fem senaste.\n${relevantSplit ? `${isFinlandiaHome ? "Borta" : "Hemma"}: ${relevantSplit.wins} vinster på ${relevantSplit.played} matcher.` : "Hemma-/bortaunderlag saknas."}`
+      : "Underlaget räcker inte för att identifiera statistiskt styrkta styrkor.",
+    weaknesses: opponentStanding
+      ? `Försvar: ${formatMetric(opponentStanding.goalsAgainst / opponentStanding.games)} insläppta mål per match.\nPoängsnitt: ${formatMetric(opponentPointsPerGame)} per match.\n${relevantSplit ? `I relevant ${isFinlandiaHome ? "borta" : "hemma"}kontext är poängsnittet ${formatMetric(relevantPointsPerGame)} per match och målskillnaden ${relevantSplit.goalsFor - relevantSplit.goalsAgainst}.` : "Relevant hemma-/bortadata saknas."}`
+      : "Underlaget räcker inte för att identifiera statistiskt styrkta svagheter.",
+    match_plan: opponentStanding
+      ? `Spela med tålamod och värdera bollinnehavet utifrån motståndarens målskillnad.\nPrioritera återerövring direkt efter bolltapp och skydda ytan bakom första pressen.\nAnvänd bredd och spelvändningar för att flytta motståndarens försvar.\nFölj upp matchbilden efter 20 minuter och justera presshöjd efter motståndarens utgångar.`
+      : "Samla en tydlig matchbild under inledningen och anpassa presshöjd och risknivå efter motståndarens uppställning.",
+    uncertainty: `Reservrapporten är automatiskt skapad från Min Fotboll-data insamlad ${minFotbollData.generatedAt}. Spelarstatistik och målminuter är ofullständiga och rapporten innehåller ingen videobedömning. Slutsatserna ska användas som tränarstöd, inte som säkra prognoser.`,
+    model_name: "Statistisk reservrapport",
+    prompt_version: `Min Fotboll ${minFotbollData.schemaVersion}`,
+    generated_at: `${minFotbollData.generatedAt}T12:00:00+02:00`,
+  };
+  const hasGeneratedReport = Boolean(aiReport?.summary?.trim());
+  const effectiveReport = hasGeneratedReport ? aiReport : fallbackReport;
+  const matchPlan = splitPlan(effectiveReport.match_plan ?? null);
 
   const seasonScored = toNumber(
     opponent?.season_goals_scored_per_game,
@@ -771,7 +807,7 @@ export default async function Home() {
           </div>
         </section>
 
-        {aiReport?.summary && (
+        {effectiveReport.summary && (
           <section className="briefCard" aria-labelledby="brief-title">
             <div className="briefIcon" aria-hidden="true">
               AI
@@ -779,7 +815,7 @@ export default async function Home() {
             <div>
               <span className="overline">Scoutens huvudbild</span>
               <h2 id="brief-title">Det viktigaste inför matchen</h2>
-              <p>{aiReport.summary}</p>
+              <p>{effectiveReport.summary}</p>
 
               {matchPlan[0] && (
                 <div className="keyMessage">
@@ -1372,30 +1408,25 @@ export default async function Home() {
               <p>{dashboard.opponent_name}</p>
             </div>
 
-            {aiReport && (
-              <div className="reportMeta">
-                <span>{aiReport.model_name ?? "AI"}</span>
-                <span>Prompt {aiReport.prompt_version ?? "–"}</span>
-              </div>
-            )}
+            <div className="reportMeta">
+              <span>{effectiveReport.model_name ?? "AI"}</span>
+              <span>{hasGeneratedReport ? "AI-genererad" : "Automatisk reservrapport"}</span>
+            </div>
           </div>
 
-          {reportError ? (
-            <div className="analysisState">
-              Kunde inte läsa AI-rapporten: {reportError.message}
-            </div>
-          ) : !aiReport ? (
-            <div className="analysisState">
-              <h3>Ingen AI-rapport ännu</h3>
-              <p>Kör Edge Function <code>generate-scout-report</code> i Supabase.</p>
-            </div>
-          ) : (
+          {
             <div className="reportContent">
+              {!hasGeneratedReport && (
+                <div className="fallbackReportNotice">
+                  AI-rapporten i Supabase saknar innehåll. Den här rapporten har därför skapats automatiskt från den importerade Min Fotboll-statistiken.
+                  {reportError ? ` Databasfel: ${reportError.message}` : ""}
+                </div>
+              )}
               <section className="summarySection">
                 <span className="reportNumber">01</span>
                 <div>
                   <h3>Sammanfattning</h3>
-                  <p className="preWrap">{aiReport.summary}</p>
+                  <p className="preWrap">{effectiveReport.summary}</p>
                 </div>
               </section>
 
@@ -1403,13 +1434,13 @@ export default async function Home() {
                 <div className="reportPanel strengthPanel">
                   <span className="panelLabel">Styrkor</span>
                   <h3>Det vi behöver respektera</h3>
-                  <p className="preWrap">{aiReport.strengths}</p>
+                  <p className="preWrap">{effectiveReport.strengths}</p>
                 </div>
 
                 <div className="reportPanel weaknessPanel">
                   <span className="panelLabel">Svagheter</span>
                   <h3>Det vi kan utnyttja</h3>
-                  <p className="preWrap">{aiReport.weaknesses}</p>
+                  <p className="preWrap">{effectiveReport.weaknesses}</p>
                 </div>
               </section>
 
@@ -1432,7 +1463,7 @@ export default async function Home() {
                     ))}
                   </ol>
                 ) : (
-                  <p className="preWrap">{aiReport.match_plan}</p>
+                  <p className="preWrap">{effectiveReport.match_plan}</p>
                 )}
               </section>
 
@@ -1440,18 +1471,18 @@ export default async function Home() {
                 <div className="uncertaintyIcon" aria-hidden="true">!</div>
                 <div>
                   <h3>Osäkerheter och begränsningar</h3>
-                  <p className="preWrap">{aiReport.uncertainty}</p>
+                  <p className="preWrap">{effectiveReport.uncertainty}</p>
                 </div>
               </aside>
 
               <div className="generatedRow">
                 <span>Rapport genererad</span>
-                <time dateTime={aiReport.generated_at ?? undefined}>
-                  {formatGeneratedAt(aiReport.generated_at)}
+                <time dateTime={effectiveReport.generated_at ?? undefined}>
+                  {formatGeneratedAt(effectiveReport.generated_at)}
                 </time>
               </div>
             </div>
-          )}
+          }
         </section>
 
         <footer className="siteFooter">
